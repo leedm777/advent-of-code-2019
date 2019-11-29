@@ -7,6 +7,7 @@
   (apply + deltas))
 
 (defn find-repeat
+  "Repeats the list of deltas, looking for a duplicated total."
   [deltas]
   (->> deltas
        (repeat)
