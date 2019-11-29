@@ -12,18 +12,16 @@
   (->> deltas
        (repeat)
        (flatten)
-       (reduce (fn [{:keys [seen total first-dupe]} val]
+       (reduce (fn [{:keys [seen total]} val]
                  (let [next-total (+ total val)
-                       first-dupe (or first-dupe
-                                      (get seen next-total))]
-                   (if (nil? first-dupe)
+                       is-repeated (contains? seen next-total)]
+                   (if is-repeated
+                     (reduced next-total)
                      {
                       :seen (conj seen next-total)
                       :total next-total
-                      :first-dupe first-dupe
-                      }
-                     (reduced first-dupe))))
-               { :seen #{0} :total 0 :first-dupe nil})))
+                      })))
+               { :seen #{0} :total 0})))
 
 (defn solve
   "Day 1 of 2018, just to test my infra"
