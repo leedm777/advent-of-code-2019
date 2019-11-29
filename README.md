@@ -4,11 +4,18 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
 
 ## Usage
 
-FIXME
+    $ lein run dayXX # for day00 through day25
+
+## Things I learned
+
+ - `day00`
+   - You have to require a namespace before `find-ns` can find it
+   - You can return `(reduced X)` to short circuit a `(reduce)` to return
+     `X`.
 
 ## License
 
-Copyright © 2019 FIXME
+Copyright © 2019 David M. Lee, II
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at

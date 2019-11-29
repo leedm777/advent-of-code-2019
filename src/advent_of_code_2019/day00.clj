@@ -1,5 +1,4 @@
 (ns advent-of-code-2019.day00
-  (:require [clojure.java.io :as io])
   (:gen-class))
 
 (defn total
@@ -25,15 +24,10 @@
                      (reduced first-dupe))))
                { :seen #{0} :total 0 :first-dupe nil})))
 
-(defn day00
+(defn solve
   "Day 1 of 2018, just to test my infra"
   [input]
   (->> input
        (clojure.string/split-lines)
        (map #(Integer. %))
-       ((fn [deltas] { :total (total deltas)
-                      :first-dupe (find-repeat deltas)}))))
-
-(defn -main
-  [& args]
-  (day00 (slurp (io/resource "day00.txt"))))
+       ((fn [deltas] { :total (total deltas), :first-dupe (find-repeat deltas)}))))
