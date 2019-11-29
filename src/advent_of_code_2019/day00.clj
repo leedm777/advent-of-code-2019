@@ -12,14 +12,14 @@
   (->> deltas
        (repeat)
        (flatten)
-       (reduce (fn [acc v]
-                 (let [t (+ (:total acc) v)
-                       first-dupe (or (:first-dupe acc)
-                                      (get (:seen acc) t))]
+       (reduce (fn [{:keys [seen total first-dupe]} val]
+                 (let [next-total (+ total val)
+                       first-dupe (or first-dupe
+                                      (get seen next-total))]
                    (if (nil? first-dupe)
                      {
-                      :seen (conj (:seen acc) t)
-                      :total t
+                      :seen (conj seen next-total)
+                      :total next-total
                       :first-dupe first-dupe
                       }
                      (reduced first-dupe))))
