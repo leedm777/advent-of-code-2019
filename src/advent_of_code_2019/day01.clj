@@ -16,9 +16,7 @@
   [input]
   (let [module-weights (->> input
                             (clojure.string/split-lines)
-                            (map #(Integer. %))
-                            )]
+                            (map #(Integer. %)))]
     {
      :naive (apply + (map calculate-fuel-naive module-weights))
-     :less-naive  (apply + (map calculate-fuel module-weights))
-     }))
+     :less-naive  (apply + (map calculate-fuel module-weights))}))
