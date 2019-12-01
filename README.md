@@ -12,6 +12,8 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - You have to require a namespace before `find-ns` can find it
    - You can return `(reduced X)` to short circuit a `(reduce)` to return
      `X`.
+ - `day01`
+   - You need to be really quick to score points
 
 ## License
 
