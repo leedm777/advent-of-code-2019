@@ -1,5 +1,6 @@
 (ns advent-of-code-2019.core
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.pprint :as p])
   (:gen-class))
 
 (defn solve-for-day [day]
@@ -17,5 +18,4 @@
        (map solve-for-day)
        (flatten)
        (apply sorted-map)
-       (pr))
-  )
+       (p/pprint)))
