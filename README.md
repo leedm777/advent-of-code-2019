@@ -14,6 +14,8 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
      `X`.
  - `day01`
    - You need to be really quick to score points
+   - `quot` returns just the quotient of a division; simpler than converting
+     to `int`
 
 ## License
 

@@ -2,8 +2,7 @@
 
 (defn calculate-fuel-naive
   [mass]
-  (let [fuel   (- (int (/ mass 3)) 2)]
-    (max fuel 0)))
+  (max (- (quot mass 3) 2) 0))
 
 (defn calculate-fuel
   [mass]
