@@ -5,14 +5,17 @@
 (defn int-code
   [p]
   (loop [program p
-         pc 0]
-    (let [opcode (get program pc)
-          a (get program (get program (+ pc 1)))
-          b (get program (get program (+ pc 2)))
-          dest (get program (+ pc 3))]
+         instruction-pointer 0]
+    (let [opcode (get program instruction-pointer)
+          a (get program (get program (+ instruction-pointer 1)))
+          b (get program (get program (+ instruction-pointer 2)))
+          dest (get program (+ instruction-pointer 3))]
       (cond
-        (= opcode 1) (recur (assoc program dest (+ a b)) (+ pc 4))
-        (= opcode 2) (recur (assoc program dest (* a b)) (+ pc 4))
+        ;; 1 addition
+        (= opcode 1) (recur (assoc program dest (+ a b)) (+ instruction-pointer 4))
+        ;; 2 multiplication
+        (= opcode 2) (recur (assoc program dest (* a b)) (+ instruction-pointer 4))
+        ;; 99 halt
         (= opcode 99) program))))
 
 (defn search
