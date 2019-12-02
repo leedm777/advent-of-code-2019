@@ -20,6 +20,7 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - `(assoc vector location value)` is the proper way to update a vector
    - The `->>` and `->` macros are a pain if you need to mix first/last args
    - Use `as->` to mix and match better
+   - `case` is more like switch-case than `cond`
 
 ## License
 

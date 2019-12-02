@@ -12,13 +12,13 @@
           a (get program (get program (+ instruction-pointer 1)))
           b (get program (get program (+ instruction-pointer 2)))
           dest (get program (+ instruction-pointer 3))]
-      (cond
+      (case opcode
         ;; 1 addition
-        (= opcode 1) (recur (assoc program dest (+ a b)) (+ instruction-pointer 4))
+        1 (recur (assoc program dest (+ a b)) (+ instruction-pointer 4))
         ;; 2 multiplication
-        (= opcode 2) (recur (assoc program dest (* a b)) (+ instruction-pointer 4))
+        2 (recur (assoc program dest (* a b)) (+ instruction-pointer 4))
         ;; 99 halt - output is in address 0
-        (= opcode 99) (get program 0)))))
+        99 (get program 0)))))
 
 (defn search
   "Search for settings that result in the expected output"
