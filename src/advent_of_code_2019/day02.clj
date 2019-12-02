@@ -1,8 +1,10 @@
-(ns advent-of-code-2019.day02)
+(ns advent-of-code-2019.day02
+  (:require [clojure.string :as s]))
 
 ;; TODO
 
 (defn int-code
+  "Execute Intcode program"
   [p]
   (loop [program p
          instruction-pointer 0]
@@ -15,18 +17,19 @@
         (= opcode 1) (recur (assoc program dest (+ a b)) (+ instruction-pointer 4))
         ;; 2 multiplication
         (= opcode 2) (recur (assoc program dest (* a b)) (+ instruction-pointer 4))
-        ;; 99 halt
-        (= opcode 99) program))))
+        ;; 99 halt - output is in address 0
+        (= opcode 99) (get program 0)))))
 
 (defn search
-  [program]
+  "Search for settings that result in the expected output"
+  [program expected]
   (loop [noun 0
          verb 0]
     (let [updated-program (-> program
                               (assoc 1 noun)
                               (assoc 2 verb))
           output (int-code updated-program)]
-      (if (= (get output 0) 19690720)
+      (if (= output expected)
         (+ (* 100 noun) verb)
         (if (= verb 99)
           (recur (inc noun) 0)
@@ -34,14 +37,14 @@
 
 (defn solve
   [input]
-  (let [program (->> input
-                     (clojure.string/trim)
-                     (#(clojure.string/split % #","))
-                     (map #(Integer. %))
-                     (vec))
+  (let [program (as-> input i
+                  (s/trim i)
+                  (s/split i #",")
+                  (map #(Integer. %) i)
+                  (vec i))
         updated-program (-> program
                             (assoc 1 12)
                             (assoc 2 2))
-        output (int-code updated-program)]
-    {:old-pos-0 (get output 0)
-     :new-settings (search program)}))
+        updated-program-output (int-code updated-program)]
+    {:updated-program-output updated-program-output
+     :new-settings (search program 19690720)}))
