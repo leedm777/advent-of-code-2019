@@ -1,5 +1,6 @@
 (ns advent-of-code-2019.day03
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [clojure.set]))
 
 (def empty-board { :points #{}, :pos [0 0], :ctr 0, :steps {}})
 
@@ -31,31 +32,40 @@
           empty-board
           path-segments))
 
-(defn intercepts
-  [& turns]
-  (->> turns
-       (map plot-all)
+(defn find-intercepts
+  [& boards]
+  (->> boards
        (map :points)
        (apply clojure.set/intersection)))
 
 (defn distance-to-closest-intercept
   [& turns]
-  (->> (apply intercepts turns)
+  (->> turns
+       ;; plot all the wirings
+       (map plot-all)
+       ;; find all the intercepts
+       (apply find-intercepts)
+       ;; compute Manhattan distance to each intercept
        (map (fn [[x y]] (+ (Math/abs x) (Math/abs y))))
+       ;; find the shortest one
        (sort)
        (first)))
 
 (defn steps-to-closest-intercept
   [& turns]
-  (let [boards (map plot-all turns)
-        intercepts (->> boards
-                        (map :points)
-                        (apply clojure.set/intersection))
+  (let [
+        ;; plot all the wirings
+        boards (map plot-all turns)
+        ;; find all the intercepts
+        intercepts (apply find-intercepts boards)
         steps (map :steps boards)
+        ;; find the steps to each intercepts
         intercepted-steps (map #(select-keys % intercepts) steps)
-        distances (vals (apply merge-with + intercepted-steps))
+        ;; sum all the steps to each intercept
+        steps-to-intercepts (vals (apply merge-with + intercepted-steps))
         ]
-    (first (sort distances))))
+    ;; find the shortest one
+    (first (sort steps-to-intercepts))))
 
 (defn solve
   [input]

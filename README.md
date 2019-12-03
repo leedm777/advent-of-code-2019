@@ -21,6 +21,20 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - The `->>` and `->` macros are a pain if you need to mix first/last args
    - Use `as->` to mix and match better
    - `case` is more like switch-case than `cond`
+ - `day03`
+   - Lots of off by one errors trying to figure out this solution
+   - Cider (or maybe the REPL in general) requires-in a lot of things that aren't
+     required in by defaults, so tests and stuff may pass in the REPL, but will fail
+     during `lein run` or `lein test`
+   - There's a million different ways to lookup key `k` in map `m`
+     - `(m k)`
+     - `(get m k)`
+     - `(:k m) ;; if k is a keyword`
+   - My solution would have been much simpler if I had focused on tracking just the path
+     instead of overall state (points, position, etc)
+   - Cider keystrokes
+     - `C-c M-n (M-)n` - switch to current namespace
+     - `C-c C-z` - switch to repl buffer
 
 ## License
 
