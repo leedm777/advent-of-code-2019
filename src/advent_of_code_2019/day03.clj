@@ -29,19 +29,23 @@
           path-segments))
 
 (defn intercepts
-  [turns1 turns2]
-  (let [board1 (plot-all turns1)
-        board2 (plot-all turns2)]
-    (disj
-     (clojure.set/intersection (:points board1) (:points board2))
-     [0 0]))  )
+  [& turns]
+  (->> turns
+       (map plot-all)
+       (map :points)
+       (apply clojure.set/intersection)))
 
 (defn distance-to-closest-intercept
-  [turns1 turns2]
-  (->> (intercepts turns1 turns2)
+  [& turns]
+  (->> (apply intercepts turns)
        (map (fn [[x y]] (+ (Math/abs x) (Math/abs y))))
        (sort)
        (first)))
 
+
 (defn solve
-  [input])
+  [input]
+  {:closest  (->> input
+                  (s/split-lines)
+                  (map #(s/split % #","))
+                  (apply distance-to-closest-intercept))})
