@@ -5,22 +5,29 @@
   [n]
   (let [nstr (str n)]
     (and (= nstr (s/join (sort nstr)))
-         (re-matches #".*([0-9])\1.*" nstr)
+         (re-find #"([0-9])\1" nstr)
          true)))
 
 (defn two-but-no-more
   ;; surely there's a regex to do this
+  ;;  - From someone else's solution: #"^(\d)(?:\1)(?!\1)|(\d)(?!\4)(\d)(?:\5)(?!\5)" (does not work)
   [s]
-  (let [[counts] (reduce (fn [[counts last-char] char]
-                           (if (= char last-char)
-                             ;; increment last item in counts array
-                             [(update counts (dec (count counts)) inc) char]
-                             ;; add new character count
-                             [(conj counts 1) char]))
-                         ;; initial list that won't match any number
-                         [[0] \x]
-                         s)]
-    (some #(= 2 %) counts)))
+  (->> s
+       (partition-by identity)
+       (map count)
+       (some #(= 2 %)))
+  ;; Original soln:
+  ;; (let [[counts] (reduce (fn [[counts last-char] char]
+  ;;                          (if (= char last-char)
+  ;;                            ;; increment last item in counts array
+  ;;                            [(update counts (dec (count counts)) inc) char]
+  ;;                            ;; add new character count
+  ;;                            [(conj counts 1) char]))
+  ;;                        ;; initial list that won't match any number
+  ;;                        [[0] \x]
+  ;;                        s)]
+  ;;   (some #(= 2 %) counts))
+  )
 
 (defn is-password-2
   [n]

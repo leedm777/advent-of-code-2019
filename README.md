@@ -38,6 +38,9 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
  - `day04`
    - Even simple things can be hard if you think about them too much.
    - Wasn't obvious from the docs, but `(update)` can update vectors :-)
+   - `(partition-by)` is super cool. "Applies f to each value in coll,
+     splitting it each time f returns a new value."
+   - `(re-find)` returns first match; `(re-matches)` has to match the whole string.
 
 ## License
 
