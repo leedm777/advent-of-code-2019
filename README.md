@@ -35,6 +35,8 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - Cider keystrokes
      - `C-c M-n (M-)n` - switch to current namespace
      - `C-c C-z` - switch to repl buffer
+ - `day04`
+   - Even simple things can be hard if you think about them too much.
 
 ## License
 

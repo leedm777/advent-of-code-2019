@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [advent-of-code-2019.day03 :refer :all]))
 
-(deftest day02-part1
+(deftest day03-part1
   (testing "example 1"
     (is (= 6 (distance-to-closest-intercept
               ["R8" "U5" "L5" "D3"]
@@ -18,7 +18,7 @@
                 ["R98" "U47" "R26" "D63" "R33" "U87" "L62" "D20" "R33" "U53" "R51"]
                 ["U98" "R91" "D20" "R16" "D67" "R40" "U7" "R15" "U6" "R7"])))))
 
-(deftest day02-part2
+(deftest day03-part2
   (testing "example 1"
     (is (= 30 (steps-to-closest-intercept
                ["R8" "U5" "L5" "D3"]
