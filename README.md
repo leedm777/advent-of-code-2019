@@ -37,6 +37,7 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
      - `C-c C-z` - switch to repl buffer
  - `day04`
    - Even simple things can be hard if you think about them too much.
+   - Wasn't obvious from the docs, but `(update)` can update vectors :-)
 
 ## License
 

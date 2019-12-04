@@ -21,3 +21,7 @@
 
   (testing "example 3"
     (is (is-password-2 111122))))
+
+(deftest day04-total
+  (testing "final answer"
+    (is (= {:candidates 925, :better-candidates 607}) (solve))))

@@ -13,9 +13,12 @@
   [s]
   (let [[counts] (reduce (fn [[counts last-char] char]
                            (if (= char last-char)
-                             [(conj (vec (butlast counts)) (inc (last counts))) char]
+                             ;; increment last item in counts array
+                             [(update counts (dec (count counts)) inc) char]
+                             ;; add new character count
                              [(conj counts 1) char]))
-                         []
+                         ;; initial list that won't match any number
+                         [[0] \x]
                          s)]
     (some #(= 2 %) counts)))
 
