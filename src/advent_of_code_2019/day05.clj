@@ -1,12 +1,6 @@
 (ns advent-of-code-2019.day05
   (:require [clojure.string :as s]))
 
-(defn read-mem-old
-  [program val mode]
-    (case mode
-      0 (program val)
-      1 val))
-
 (defn read-mem
   [program ip mode]
   (let [val (program ip)]
@@ -56,7 +50,7 @@
                 [program
                  input
                  output
-                 (if (= 0 a)
+                 (if (zero? a)
                    (+ ip 3)
                    target)]))}
    6 {;; jump-if-false
@@ -66,9 +60,9 @@
                 [program
                  input
                  output
-                 (if (= 0 a)
-                   target
-                   (+ ip 3))]))}
+                 (if-not (zero? a)
+                   (+ ip 3)
+                   target)]))}
    7 {;; less than
       :func (fn [program input output modes ip]
               (let [a (read-mem program (+ ip 1) (nth modes 0))
