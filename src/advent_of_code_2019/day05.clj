@@ -1,44 +1,67 @@
 (ns advent-of-code-2019.day05
   (:require [clojure.string :as s]))
 
-(defn read-mem [program val mode]
-  (case mode
-    0 (program val)
-    1 val))
+(defn read-mem-old
+  [program val mode]
+    (case mode
+      0 (program val)
+      1 val))
+
+(defn read-mem
+  [program ip mode]
+  (let [val (program ip)]
+    (case mode
+      0 (program val)
+      1 val)))
 
 (def opcodes
   {1 {;; addition
       :num-params 3
-      :func (fn [program input output modes [a b dest]]
-              [(assoc program
-                      dest
-                      (+ (read-mem program a (nth modes 0))
-                         (read-mem program b (nth modes 1))))
-               input
-               output])}
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))
+                    b (read-mem program (+ ip 2) (nth modes 1))
+                    dest (program (+ ip 3))]
+                [(assoc program dest (+ a b))
+                 input
+                 output
+                 (+ ip 4)]))}
    2 {;; multiplication
       :num-params 3
-      :func (fn [program input output modes [a b dest]]
-              [(assoc program
-                      dest
-                      (* (read-mem program a (nth modes 0))
-                         (read-mem program b (nth modes 1))))
-               input
-               output])}
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))
+                    b (read-mem program (+ ip 2) (nth modes 1))
+                    dest (program (+ ip 3))]
+                [(assoc program dest (* a b))
+                 input
+                 output
+                 (+ ip 4)]))}
    3 {;; input
       :num-params 1
-      :func (fn [program input output modes [dest]]
-              [(assoc program
-                      dest
-                      (first input))
-               (rest input)
-               output])}
+      :func (fn [program input output modes ip]
+              (let [dest (program (+ ip 1))]
+                [(assoc program
+                        dest
+                        (first input))
+                 (rest input)
+                 output
+                 (+ ip 2)]))}
    4 {;; output
       :num-params 1
-      :func (fn [program input output modes [a]]
-              [program
-               input
-               (conj output (read-mem program a (nth modes 0)))])}})
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))]
+                [program
+                 input
+                 (conj output a)
+                 (+ ip 2)]))}
+   5 {;; jump-if-true
+      }
+   6 {;; jump-if-false
+      }
+   7 {;; less than
+      }
+   8 {;; equals
+      }
+   })
 
 (defn param-mode
   [digits]
@@ -58,9 +81,8 @@
          (let [opcode (mod instruction 100)
                modes (param-mode (quot instruction 100))
                {:keys [num-params func]} (opcodes opcode)
-               params (subvec program (inc instruction-pointer) (+ instruction-pointer num-params 1))
-               [next-program next-input next-output] (func program input output modes params)]
-           (recur next-program next-input next-output (+ instruction-pointer num-params 1))))))))
+               [next-program next-input next-output next-ip] (func program input output modes instruction-pointer)]
+           (recur next-program next-input next-output next-ip)))))))
 
 (defn solve
   [input]
