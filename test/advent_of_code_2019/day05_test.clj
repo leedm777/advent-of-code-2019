@@ -15,6 +15,12 @@
   (testing "example 5"
     (is (= { :mem [30 1 1 4 2 5 6 0 99] :out [] } (int-code [1 1 1 4 99 5 6 0 99])))))
 
-(deftest day05-test
+(deftest day05-test-part1
   (testing "example 1"
-    (is (= { :mem [:some-input 0 4 0 99] :out [:some-input] } (int-code [3 0 4 0 99] [:some-input])))))
+    (is (= { :mem [:some-input 0 4 0 99] :out [:some-input] } (int-code [3 0 4 0 99] [:some-input]))))
+
+  (testing "example 2"
+    (is (= { :mem [1002,4,3,4,99] :out []} (int-code [1002,4,3,4,33]))))
+
+  (testing "example 3"
+    (is (= { :mem [1101,100,-1,4,99] :out []} (int-code [1101,100,-1,4,0])))))
