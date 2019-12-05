@@ -1,8 +1,6 @@
 (ns advent-of-code-2019.day02
   (:require [clojure.string :as s]))
 
-;; TODO
-
 (defn int-code
   "Execute Intcode program"
   [p]
