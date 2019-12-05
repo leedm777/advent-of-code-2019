@@ -46,6 +46,7 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - `if-not` exists
    - Really should've had a single map with machine state that each method
      operated on. See https://github.com/sooheon/aoc/blob/6e490e55f5cc9797f43060b89a94e9756e5be9be/aoc-clojure/src/main/aoc/2019/day05.clj
+     - Which I couldn't resist and actually ended up doing...
 
 ## License
 

@@ -2,6 +2,7 @@
   (:require [clojure.string :as s]))
 
 (defn initial-state
+  "Initializes the int-code computer"
   ([memory] (initial-state memory []))
   ([memory input]
    {:memory memory
@@ -45,64 +46,62 @@
   [n st]
   (nth (iterate read-param st) n))
 
+(defn int-binary-op
+  [f]
+  (fn [st]
+    (let [st (read-params 3 st)
+          [a b] (:params st)
+          [_ _ dest] (:ptrs st)]
+      (assoc-in st [:memory dest] (f a b)))))
+
+(def int-add (int-binary-op +))
+
+(def int-mult (int-binary-op *))
+
+(defn int-input
+  [st]
+  (let [st (read-param st)
+        [dest] (:ptrs st)
+        [val & input] (:input st)]
+    (merge st {:memory (assoc (:memory st) dest val)
+               :input input})))
+
+(defn int-output
+  [st]
+  (let [st (read-param st)
+        [val] (:params st)
+        output (conj (:output st) val)]
+    (merge st {:output output})))
+
+(defn int-jump-if-true
+  [st]
+  (let [st (read-params 2 st)
+        [a target] (:params st)]
+    (if (zero? a)
+      st
+      (assoc st :ip target))))
+
+(defn int-jump-if-false
+  [st]
+  (let [st (read-params 2 st)
+        [a target] (:params st)]
+    (if-not (zero? a)
+      st
+      (assoc st :ip target))))
+
+(def int-less-than (int-binary-op (fn [a b] (if (< a b) 1 0))))
+
+(def int-equals  (int-binary-op (fn [a b] (if (= a b) 1 0))))
+
 (def opcodes
-  {;; 1 - addition
-   1 (fn [st]
-       (let [st (read-params 3 st)
-             {:keys [params ptrs]} st
-             [a b] params
-             [_ _ dest] ptrs]
-         (assoc-in st [:memory dest] (+ a b))))
-   ;; 1 - multiplication
-   2 (fn [st]
-       (let [st (read-params 3 st)
-             {:keys [params ptrs]} st
-             [a b] params
-             [_ _ dest] ptrs]
-         (assoc-in st [:memory dest] (* a b))))
-   ;; 3 - input
-   3 (fn [st]
-       (let [st (read-param st)
-             {:keys [ptrs input memory]} st
-             [dest] ptrs
-             [val & input] (:input st)]
-         (merge st {:memory (assoc memory dest val)
-                    :input input})))
-   ;; 4 - output
-   4 (fn [st]
-       (let [st (read-param st)
-             {:keys [params output]} st
-             [val] params
-             output (conj output val)]
-         (merge st {:output output})))
-   ;; 5 - jump-if-true
-   5 (fn [st]
-       (let [st (read-params 2 st)
-             [a target] (:params st)]
-         (if (zero? a)
-           st
-           (assoc st :ip target))))
-   ;; 6 - jump-if-false
-   6 (fn [st]
-       (let [st (read-params 2 st)
-             [a target] (:params st)]
-         (if-not (zero? a)
-           st
-           (assoc st :ip target))))
-   ;; 7 - less than
-   7 (fn [st]
-       (let [st (read-params 3 st)
-             [a b] (:params st)
-             [_ _ dest] (:ptrs st)
-             val (if (< a b) 1 0)]
-         (assoc-in st [:memory dest] val)))
-   ;; 8 - equals
-   8 (fn [st]
-       (let [st (read-params 3 st)
-             [a b] (:params st)
-             [_ _ dest] (:ptrs st)
-             val (if (= a b) 1 0)]
-         (assoc-in st [:memory dest] val)))})
+  {1 int-add
+   2 int-mult
+   3 int-input
+   4 int-output
+   5 int-jump-if-true
+   6 int-jump-if-false
+   7 int-less-than
+   8 int-equals})
 
 (defn int-code
   ([memory] (int-code memory []))
