@@ -16,7 +16,6 @@
 
 (def opcodes
   {1 {;; addition
-      :num-params 3
       :func (fn [program input output modes ip]
               (let [a (read-mem program (+ ip 1) (nth modes 0))
                     b (read-mem program (+ ip 2) (nth modes 1))
@@ -24,9 +23,8 @@
                 [(assoc program dest (+ a b))
                  input
                  output
-                 (+ ip 4)]))}
+                 (+ ip 4)]))      }
    2 {;; multiplication
-      :num-params 3
       :func (fn [program input output modes ip]
               (let [a (read-mem program (+ ip 1) (nth modes 0))
                     b (read-mem program (+ ip 2) (nth modes 1))
@@ -36,7 +34,6 @@
                  output
                  (+ ip 4)]))}
    3 {;; input
-      :num-params 1
       :func (fn [program input output modes ip]
               (let [dest (program (+ ip 1))]
                 [(assoc program
@@ -46,7 +43,6 @@
                  output
                  (+ ip 2)]))}
    4 {;; output
-      :num-params 1
       :func (fn [program input output modes ip]
               (let [a (read-mem program (+ ip 1) (nth modes 0))]
                 [program
@@ -54,12 +50,43 @@
                  (conj output a)
                  (+ ip 2)]))}
    5 {;; jump-if-true
-      }
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))
+                    target (read-mem program (+ ip 2) (nth modes 1))]
+                [program
+                 input
+                 output
+                 (if (= 0 a)
+                   (+ ip 3)
+                   target)]))}
    6 {;; jump-if-false
-      }
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))
+                    target (read-mem program (+ ip 2) (nth modes 1))]
+                [program
+                 input
+                 output
+                 (if (= 0 a)
+                   target
+                   (+ ip 3))]))}
    7 {;; less than
-      }
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))
+                    b (read-mem program (+ ip 2) (nth modes 1))
+                    dest (program (+ ip 3))]
+                [(assoc program dest (if (< a b) 1 0))
+                 input
+                 output
+                 (+ ip 4)]))}
    8 {;; equals
+      :func (fn [program input output modes ip]
+              (let [a (read-mem program (+ ip 1) (nth modes 0))
+                    b (read-mem program (+ ip 2) (nth modes 1))
+                    dest (program (+ ip 3))]
+                [(assoc program dest (if (= a b) 1 0))
+                 input
+                 output
+                 (+ ip 4)]))
       }
    })
 
@@ -80,7 +107,7 @@
          { :mem program, :out output }
          (let [opcode (mod instruction 100)
                modes (param-mode (quot instruction 100))
-               {:keys [num-params func]} (opcodes opcode)
+               {:keys [func]} (opcodes opcode)
                [next-program next-input next-output next-ip] (func program input output modes instruction-pointer)]
            (recur next-program next-input next-output next-ip)))))))
 
@@ -91,4 +118,5 @@
                   (s/split i #",")
                   (map #(Integer. %) i)
                   (vec i))]
-    { :part1 (:out (int-code program [1])) }))
+    {:part1 (:out (int-code program [1]))
+     :part2 (:out (int-code program [5]))}))
