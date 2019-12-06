@@ -23,8 +23,27 @@
          (map #(count-orbits m %))
          (apply +))))
 
+(defn path-to
+  ([m start end] (path-to m start end []))
+  ([m start end p]
+   (if (= start end)
+     p
+     (recur m (m start) end (conj p start)))))
+
+(defn transfers-to-santa
+  [orbits]
+  (let [m (build-map orbits)
+        you (reverse (path-to m "YOU" "COM"))
+        santa (reverse (path-to m "SAN" "COM"))]
+    (loop [[next-you & rest-you] you
+           [next-santa & rest-santa] santa]
+      (if (= next-you next-santa)
+        (recur rest-you rest-santa)
+        (+ (count rest-you) (count rest-santa))))))
+
 (defn solve
   [input]
   (->> input
        (s/split-lines)
-       ((fn [orbits] { :orbits (total-orbits orbits)}))))
+       ((fn [orbits] {:orbits (total-orbits orbits)
+                      :santa-hops (transfers-to-santa orbits)}))))
