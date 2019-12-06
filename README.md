@@ -50,6 +50,8 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
  - `day06
    - Data structures matter a lot. I started mapping center->outward, but couldn't get what
      I needed. I reversed it to map out->center, and then it became easy.
+   - Interestingly, the path function I built for the 2nd problem would've been
+     helpful for the first. Refactored according.
 
 ## License
 

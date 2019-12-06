@@ -1,49 +1,53 @@
 (ns advent-of-code-2019.day06
   (:require [clojure.string :as s]))
 
+(def center "COM")
+(def you "YOU")
+(def santa "SAN")
+
 (defn build-map
   ([orbits] (build-map orbits {}))
-  ([[orbit & orbits] m]
+  ([[orbit & orbits] orbit-map]
    (if (nil? orbit)
-     m
-     (let [[center obj] (s/split orbit #"\)")]
-       (recur orbits (assoc m obj center))))))
-
-(defn count-orbits
-  [m obj]
-  (if (= obj "COM")
-    0
-    (inc (count-orbits m (m obj)))))
-
-(defn total-orbits
-  [orbits]
-  (let [m (build-map orbits)]
-    (->> m
-         (keys)
-         (map #(count-orbits m %))
-         (apply +))))
+     orbit-map
+     (let [[center orbiting-body] (s/split orbit #"\)")]
+       (recur orbits (assoc orbit-map orbiting-body center))))))
 
 (defn path-to
-  ([m start end] (path-to m start end []))
-  ([m start end p]
+  ([orbit-map start end] (path-to orbit-map start end []))
+  ([orbit-map start end p]
    (if (= start end)
      p
-     (recur m (m start) end (conj p start)))))
+     (recur orbit-map (orbit-map start) end (conj p start)))))
 
 (defn transfers-to-santa
-  [orbits]
-  (let [m (build-map orbits)
-        you (reverse (path-to m "YOU" "COM"))
-        santa (reverse (path-to m "SAN" "COM"))]
-    (loop [[next-you & rest-you] you
-           [next-santa & rest-santa] santa]
+  [orbit-map]
+  (let [you-path (reverse (path-to orbit-map you center))
+        santa-path (reverse (path-to orbit-map santa center))]
+    ;; drop any common planets from the path to COM,
+    ;; and what's left are the shortest paths to a common
+    ;; planet
+    (loop [[next-you & rest-you] you-path
+           [next-santa & rest-santa] santa-path]
       (if (= next-you next-santa)
         (recur rest-you rest-santa)
         (+ (count rest-you) (count rest-santa))))))
 
+(defn count-orbits
+  [orbit-map orbiting-body]
+  (count (path-to orbit-map orbiting-body center)))
+
+(defn total-orbits
+  [orbit-map]
+  (->> orbit-map
+       (keys)
+       (map #(count-orbits orbit-map %))
+       (apply +)))
+
 (defn solve
   [input]
-  (->> input
-       (s/split-lines)
-       ((fn [orbits] {:orbits (total-orbits orbits)
-                      :santa-hops (transfers-to-santa orbits)}))))
+  (let [orbit-map (->> input
+                       (s/split-lines)
+                       (build-map))]
+    {:orbits (total-orbits orbit-map)
+     :santa-hops (transfers-to-santa orbit-map)}))
