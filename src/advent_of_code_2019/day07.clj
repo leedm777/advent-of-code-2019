@@ -13,6 +13,7 @@
     :param-mode 0
     :params []
     :ptrs []
+    :paused false
     }))
 
 (defn read-instruction
@@ -61,11 +62,13 @@
 
 (defn int-input
   [st]
-  (let [st (read-param st)
-        [dest] (:ptrs st)
-        [val & input] (:input st)]
-    (merge st {:memory (assoc (:memory st) dest val)
-               :input input})))
+  (if (empty? (:input st))
+    (assoc st :paused true)
+    (let [st (read-param st)
+          [dest] (:ptrs st)
+          [val & input] (:input st)]
+      (merge st {:memory (assoc (:memory st) dest val)
+                 :input input}))))
 
 (defn int-output
   [st]
@@ -94,6 +97,10 @@
 
 (def int-equals  (int-binary-op (fn [a b] (if (= a b) 1 0))))
 
+(defn int-halt
+  [st]
+  (assoc st :paused true))
+
 (def opcodes
   {1 int-add
    2 int-mult
@@ -102,19 +109,32 @@
    5 int-jump-if-true
    6 int-jump-if-false
    7 int-less-than
-   8 int-equals})
+   8 int-equals
+   99 int-halt})
 
 (defn int-code
   ([memory] (int-code memory []))
   ([memory input]
-   (loop [st (initial-state memory input)]
-     (let [st (read-instruction st)
-           {:keys [opcode]} st]
-       (if (= opcode 99)
-         st
-         (do
-           ;;(println st)
-           (recur ((opcodes opcode) st))))))))
+   (let [st (read-instruction (initial-state memory input))]
+     (int-exec st))))
+
+(defn int-exec
+  [st]
+  (let [{:keys [opcode]} st
+        op (opcodes opcode)
+        next-st (op st)]
+    ;; (println next-st) ; debug
+    (if (:paused next-st)
+      next-st
+      (recur (read-instruction next-st)))))
+
+(defn int-halted?
+  [st]
+  (= 99 (:opcode st)))
+
+(defn int-resume-input
+  [st inputs]
+  (int-exec (merge st { :input inputs, :paused false })))
 
 (defn amp
   ([program phase-settings] (amp program phase-settings 0))
@@ -140,8 +160,20 @@
        (map #(amp program %))
        (apply max)))
 
+(defn feedback-exec
+  [amps n input]
+  (let [st (int-resume-input (amps n) [input])
+        output (last (:output st))
+        next-amp (mod (inc n) (count amps))]
+    ;; (println next-amp output) ;; debug
+    (if (and (= next-amp 0) (int-halted? st))
+      output
+      (recur (assoc amps n st) next-amp output))))
+
 (defn feedback-amp
-  [program phase-settings] 0)
+  [program phase-settings]
+  (let [amps (map #(int-code program [%]) phase-settings)]
+    (feedback-exec (vec amps) 0 0)))
 
 (defn maximize-feedback
   [program]
@@ -157,5 +189,5 @@
                   (s/split i #",")
                   (map #(Integer. %) i)
                   (vec i))]
-    { ;; :part1 (maximize program)
+    {:part1 (maximize program)
      :part2 (maximize-feedback program)}))

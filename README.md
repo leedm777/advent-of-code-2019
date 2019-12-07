@@ -47,11 +47,16 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - Really should've had a single map with machine state that each method
      operated on. See https://github.com/sooheon/aoc/blob/6e490e55f5cc9797f43060b89a94e9756e5be9be/aoc-clojure/src/main/aoc/2019/day05.clj
      - Which I couldn't resist and actually ended up doing...
- - `day06
+ - `day06`
    - Data structures matter a lot. I started mapping center->outward, but couldn't get what
      I needed. I reversed it to map out->center, and then it became easy.
    - Interestingly, the path function I built for the 2nd problem would've been
      helpful for the first. Refactored according.
+ - `day07`
+   - `int-code` is getting more and more complicated
+     - I don't know if I had added the halted state earlier if it would've helped or hurt
+       trying to pause it.
+     - I also wonder how awful a solution threads would've been.
 
 ## License
 
