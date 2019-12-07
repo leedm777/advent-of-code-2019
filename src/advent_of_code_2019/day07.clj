@@ -140,6 +140,16 @@
        (map #(amp program %))
        (apply max)))
 
+(defn feedback-amp
+  [program phase-settings] 0)
+
+(defn maximize-feedback
+  [program]
+  (->> (range 5 10)
+       (permutations)
+       (map #(feedback-amp program %))
+       (apply max)))
+
 (defn solve
   [input]
   (let [program (as-> input i
@@ -147,4 +157,5 @@
                   (s/split i #",")
                   (map #(Integer. %) i)
                   (vec i))]
-    {:part1 (maximize program)}))
+    { ;; :part1 (maximize program)
+     :part2 (maximize-feedback program)}))
