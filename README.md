@@ -57,6 +57,13 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
      - I don't know if I had added the halted state earlier if it would've helped or hurt
        trying to pause it.
      - I also wonder how awful a solution threads would've been.
+ - `day08`
+   - `=` considers vectors and lists equal, so `(= [1 2 3] '(1 2 3))`. Very handy.
+   - `(map vector a b)` will zip `a` and `b` into vectors
+     ```clojure
+     (map vector [:a1 :a2 :a3] [:b2 :b2 :b3])
+     ;; => ([:a1 :b2] [:a2 :b2] [:a3 :b3])
+     ```
 
 ## License
 
