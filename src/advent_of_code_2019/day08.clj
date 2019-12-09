@@ -19,9 +19,9 @@
                                          (flatten)
                                          (group-by identity)
                                          (reduce-kv (fn [m k v] (assoc m k (count v))) {})))))
-        min-zeros (apply min (map #(% 0) counts-by-layer))
-        layer-counts (first (filter #(= (% 0) min-zeros) counts-by-layer))]
-    (* (layer-counts 1) (layer-counts 2))))
+        min-zeros (apply min (map #(get % 0 0) counts-by-layer))
+        layer-counts (first (filter #(= (get % 0 0) min-zeros) counts-by-layer))]
+    (* (get layer-counts 1 0) (get layer-counts 2 0))))
 
 (defn merge-pixels
   [upper lower]
@@ -39,7 +39,7 @@
 
 (defn render-line
   [line]
-  (s/join (map {1 \., 0 \ } line)))
+  (s/join (map {1 \X, 0 \ } line)))
 
 (defn render
   [image]
