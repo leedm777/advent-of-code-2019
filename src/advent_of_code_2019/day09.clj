@@ -1,4 +1,4 @@
-(ns advent-of-code-2019.day07
+(ns advent-of-code-2019.day09
   (:require [clojure.string :as s]))
 
 (defn initial-state
@@ -13,6 +13,7 @@
     :params []
     :ptrs []
     :paused false
+    :relative-base 0
     }))
 
 (defn read-instruction
@@ -29,14 +30,17 @@
 (defn read-param
   "Read a parameter from memory"
   [st]
-  (let [{:keys [memory ip ptrs params param-mode]} st
+  (let [{:keys [memory ip ptrs params param-mode relative-base]} st
         mode (mod param-mode 10)
         ptr (case mode
               ;; 0 - position mode
               0 (memory ip)
               ;; 1 - immediate mode
-              1 ip)
-        val (memory ptr)]
+              1 ip
+              ;; 2 - relative mode
+              2 (+ relative-base (memory ip))
+              )
+        val (get memory ptr 0)]
     (merge st {:ip (inc ip)
                :params (conj params val)
                :ptrs (conj ptrs ptr)
@@ -47,13 +51,23 @@
   [n st]
   (nth (iterate read-param st) n))
 
+(defn extend-memory
+  [mem dest]
+  (vec (concat mem (repeat (inc (- dest (count mem))) 0))))
+
+(defn int-set-memory
+  [st dest val]
+  (let [{:keys [memory]} st
+        memory (extend-memory memory dest)]
+    (assoc st :memory (assoc memory dest val))))
+
 (defn int-binary-op
   [f]
   (fn [st]
     (let [st (read-params 3 st)
           [a b] (:params st)
           [_ _ dest] (:ptrs st)]
-      (assoc-in st [:memory dest] (f a b)))))
+      (int-set-memory st dest (f a b)))))
 
 (def int-add (int-binary-op +))
 
@@ -65,9 +79,9 @@
     (assoc st :paused true)
     (let [st (read-param st)
           [dest] (:ptrs st)
-          [val & input] (:input st)]
-      (merge st {:memory (assoc (:memory st) dest val)
-                 :input input}))))
+          [val & input] (:input st)
+          st (int-set-memory st dest val)]
+      (assoc st :input input))))
 
 (defn int-output
   [st]
@@ -100,6 +114,13 @@
   [st]
   (assoc st :paused true))
 
+(defn int-adjust-relative-base
+  [st]
+  (let [st (read-params 1 st)
+        [adj] (:params st)
+        relative-base (:relative-base st)]
+    (assoc st :relative-base (+ relative-base adj))))
+
 (def opcodes
   {1 int-add
    2 int-mult
@@ -109,13 +130,8 @@
    6 int-jump-if-false
    7 int-less-than
    8 int-equals
+   9 int-adjust-relative-base
    99 int-halt})
-
-(defn int-code
-  ([memory] (int-code memory []))
-  ([memory input]
-   (let [st (read-instruction (initial-state memory input))]
-     (int-exec st))))
 
 (defn int-exec
   [st]
@@ -127,6 +143,12 @@
       next-st
       (recur (read-instruction next-st)))))
 
+(defn int-code
+  ([memory] (int-code memory []))
+  ([memory input]
+   (let [st (read-instruction (initial-state memory input))]
+     (int-exec st))))
+
 (defn int-halted?
   [st]
   (= 99 (:opcode st)))
@@ -135,52 +157,6 @@
   [st inputs]
   (int-exec (merge st { :input inputs, :paused false })))
 
-(defn amp
-  ([program phase-settings] (amp program phase-settings 0))
-  ([program [phase-setting & phase-settings] input]
-   (let [st (int-code program [phase-setting input])
-         [output] (:output st)]
-     (if (empty? phase-settings)
-       output
-       (recur program phase-settings output)))))
-
-;; https://stackoverflow.com/a/26076145/115478
-(defn permutations [s]
-  (lazy-seq
-   (if (seq (rest s))
-     (apply concat (for [x s]
-                     (map #(cons x %) (permutations (remove #{x} s)))))
-     [s])))
-
-(defn maximize
-  [program]
-  (->> (range 0 5)
-       (permutations)
-       (map #(amp program %))
-       (apply max)))
-
-(defn feedback-exec
-  [amps n input]
-  (let [st (int-resume-input (amps n) [input])
-        output (last (:output st))
-        next-amp (mod (inc n) (count amps))]
-    ;; (println next-amp output) ;; debug
-    (if (and (= next-amp 0) (int-halted? st))
-      output
-      (recur (assoc amps n st) next-amp output))))
-
-(defn feedback-amp
-  [program phase-settings]
-  (let [amps (map #(int-code program [%]) phase-settings)]
-    (feedback-exec (vec amps) 0 0)))
-
-(defn maximize-feedback
-  [program]
-  (->> (range 5 10)
-       (permutations)
-       (map #(feedback-amp program %))
-       (apply max)))
-
 (defn solve
   [input]
   (let [program (as-> input i
@@ -188,5 +164,5 @@
                   (s/split i #",")
                   (map #(Integer. %) i)
                   (vec i))]
-    {:part1 (maximize program)
-     :part2 (maximize-feedback program)}))
+    {:test-keycode (:output (int-code program [1]))
+     :coordinates (:output (int-code program [2]))}))

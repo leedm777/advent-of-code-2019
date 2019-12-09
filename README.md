@@ -64,6 +64,11 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
      (map vector [:a1 :a2 :a3] [:b2 :b2 :b3])
      ;; => ([:a1 :b2] [:a2 :b2] [:a3 :b3])
      ```
+ - `day09`
+   - There's no built-in sparse vector in Clojure. That surprisingly would've been easier
+     in JavaScript
+   - The bigint support, though, was really helpful :-)
+   - Took 17s to run part 2. I wonder if my computer is really slow, or if that was typical
 
 ## License
 
