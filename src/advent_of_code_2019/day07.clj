@@ -111,12 +111,6 @@
    8 int-equals
    99 int-halt})
 
-(defn int-code
-  ([memory] (int-code memory []))
-  ([memory input]
-   (let [st (read-instruction (initial-state memory input))]
-     (int-exec st))))
-
 (defn int-exec
   [st]
   (let [{:keys [opcode]} st
@@ -126,6 +120,12 @@
     (if (:paused next-st)
       next-st
       (recur (read-instruction next-st)))))
+
+(defn int-code
+  ([memory] (int-code memory []))
+  ([memory input]
+   (let [st (read-instruction (initial-state memory input))]
+     (int-exec st))))
 
 (defn int-halted?
   [st]

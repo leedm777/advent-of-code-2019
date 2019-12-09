@@ -1,13 +1,20 @@
 (ns advent-of-code-2019.int-code
   (:require [clojure.string :as s]))
 
+(def empty-queue clojure.lang.PersistentQueue/EMPTY)
+
+(defmethod print-method clojure.lang.PersistentQueue [q, w] ; Overload the printer for queues so they look like fish
+  (print-method '<- w)
+  (print-method (seq q) w)
+  (print-method '-< w))
+
 (defn initial-state
   "Initializes the int-code computer"
-  ([memory] (initial-state memory []))
+  ([memory] (initial-state memory empty-queue))
   ([memory input]
    {:memory memory
-    :input input
-    :output []
+    :input (apply conj empty-queue input)
+    :output empty-queue
     :ip 0
     :param-mode 0
     :params []
@@ -82,7 +89,8 @@
     (assoc st :paused true)
     (let [st (read-param st)
           [dest] (:ptrs st)
-          [val & input] (:input st)
+          val (peek (:input st))
+          input (pop (:input st))
           st (int-set-memory st dest val)]
       (assoc st :input input))))
 
@@ -169,7 +177,15 @@
 (defn int-resume-input
   "Resumes an int-code program with additional input."
   [st inputs]
-  (int-exec (merge st { :input inputs, :paused false })))
+  (let [input (:input st)]
+    (int-exec (merge st { :input (apply conj input inputs), :paused false }))))
+
+(defn int-read-output
+  "Reads a value from output."
+  [st]
+  (let [out (peek (:output st))
+        st (assoc st :output (pop (:output st)))]
+    [out st]))
 
 (defn int-halted?
   "Returns true if the given program has halted."
