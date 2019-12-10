@@ -73,6 +73,9 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - Coordinate systems are hard. I kept doing math where positive numbers went up and to
      the right instead of down and to the right.
    - Also, lots of off-by-one errors; finding the 200th element of required `(nth 199)`
+   - Clojure has `Math/atan2`, which would've solved a lot of my problems.
+   - And `interleave` would've made running through the sorted lists easier
+   - `lazy-cat` could've made my fill memory much easier...
 
 ## License
 
