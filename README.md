@@ -69,6 +69,10 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
      in JavaScript
    - The bigint support, though, was really helpful :-)
    - Took 17s to run part 2. I wonder if my computer is really slow, or if that was typical
+ - `day10`
+   - Coordinate systems are hard. I kept doing math where positive numbers went up and to
+     the right instead of down and to the right.
+   - Also, lots of off-by-one errors; finding the 200th element of required `(nth 199)`
 
 ## License
 
