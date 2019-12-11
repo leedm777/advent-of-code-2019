@@ -191,3 +191,11 @@
   "Returns true if the given program has halted."
   [st]
   (= 99 (:opcode st)))
+
+(defn int-parse
+  [input]
+  (as-> input i
+    (s/trim i)
+    (s/split i #",")
+    (map bigint i)
+    (vec i)))

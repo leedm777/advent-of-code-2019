@@ -76,6 +76,10 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - Clojure has `Math/atan2`, which would've solved a lot of my problems.
    - And `interleave` would've made running through the sorted lists easier
    - `lazy-cat` could've made my fill memory much easier...
+ - `day11`
+   - Math coordinates (postive y up) and computer coordinates (positive y down)
+     will always confuse me.
+   - I'm glad I made IntCode input/output queues the other day.
 
 ## License
 
