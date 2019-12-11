@@ -19,11 +19,15 @@
 (defn relative-positions
   [asteroids [x y]]
   (->> asteroids
-       (map (fn [[a-x a-y]]
-              (let [delta-x (- a-x x)
-                    delta-y (- a-y y)]
-                {:pos [a-x a-y]
+       (map (fn [[x_i y_i]]
+              (let [delta-x (- x_i x)
+                    delta-y (- y_i y)]
+                {:pos [x_i y_i]
                  :delta-pos [delta-x delta-y]
+                 ;; TODO - Use (Math/atan2 opp adj) to compute theta instead of
+                 ;; quadrant and slope
+                 ;;   - opp = (- x_i x)
+                 ;;   - adj = (- y y_i)
                  :quadrant (cond
                              (and (>= delta-x 0) (< delta-y 0)) 1
                              (and (>= delta-x 0) (>= delta-y 0)) 2
