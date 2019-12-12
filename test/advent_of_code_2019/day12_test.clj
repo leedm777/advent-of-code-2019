@@ -73,7 +73,7 @@
       (->> expected
            (map-indexed vector)
            (map (fn [[n e]]
-                  (is (= e (nth (simulate example1-1) n)))))
+                  (is (= e (simulate example1-1 n)))))
            (doall))))
 
 

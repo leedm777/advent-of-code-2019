@@ -1,6 +1,11 @@
 (ns advent-of-code-2019.day12
   (:require [clojure.string :as s]))
 
+(defn tap
+  [x]
+  (clojure.pprint/pprint x)
+  x)
+
 (defn update-velocities
   [n-bodies]
   (->> n-bodies
@@ -16,7 +21,7 @@
                                                                true 0))))
                               next-vel (->> vel
                                             (map vector delta-v)
-                                            (map #(apply + %)))]
+                                            (mapv #(apply + %)))]
                           {:pos pos
                            :vel next-vel}))
                       body
@@ -25,13 +30,13 @@
 (defn update-positions
   [n-bodies]
   (->> n-bodies
-       (map (fn [body]
-              (let [{:keys [pos vel]} body
-                    next-pos (->> pos
-                                  (map vector vel)
-                                  (map #(apply + %)))]
-                {:pos next-pos
-                 :vel vel})))))
+       (mapv (fn [body]
+               (let [{:keys [pos vel]} body
+                     next-pos (->> pos
+                                   (map vector vel)
+                                   (map #(apply + %)))]
+                 {:pos next-pos
+                  :vel vel})))))
 
 (defn next-step
   [n-bodies]
@@ -44,8 +49,10 @@
   (map (fn [pos] { :pos pos, :vel [0 0 0]}) positions))
 
 (defn simulate
-  [n-bodies]
-  (cons n-bodies (lazy-seq (simulate (next-step n-bodies)))))
+  [n-bodies n]
+  (if (<= n 0)
+    n-bodies
+    (recur (next-step n-bodies) (dec n))))
 
 (defn potential-energy
   [moon]
@@ -74,8 +81,7 @@
 
 (defn solve
   [_]
-  {:part1 (->> input
-               (simulate)
-               (drop 1000)
-
-               )})
+  {:part1 (as-> input i
+            (simulate i 1000)
+            (map total-energy i)
+            (apply + i))})

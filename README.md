@@ -80,6 +80,9 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - Math coordinates (postive y up) and computer coordinates (positive y down)
      will always confuse me.
    - I'm glad I made IntCode input/output queues the other day.
+ - `day12`
+   - Laziness causes stack overflow errors when a ton of work gets chained up.
+     - Had to use `mapv` instead of `map` in a few places to avoid SO errors
 
 ## License
 
