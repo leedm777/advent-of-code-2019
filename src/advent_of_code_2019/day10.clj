@@ -1,6 +1,5 @@
 (ns advent-of-code-2019.day10
-  (:require [clojure.string :as s]
-            [advent-of-code-2019.int-code :refer :all]))
+  (:require [clojure.string :as s]))
 
 (defn find-asteroids-in-row
   [row]
