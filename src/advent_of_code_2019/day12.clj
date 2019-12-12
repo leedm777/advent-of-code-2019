@@ -49,10 +49,8 @@
   (map (fn [pos] { :pos pos, :vel [0 0 0]}) positions))
 
 (defn simulate
-  [n-bodies n]
-  (if (<= n 0)
-    n-bodies
-    (recur (next-step n-bodies) (dec n))))
+  [n-bodies]
+  (iterate next-step n-bodies))
 
 (defn potential-energy
   [moon]
@@ -73,6 +71,15 @@
   (* (potential-energy moon)
      (kinetic-energy moon)))
 
+(defn cycle-time
+  [n-bodies]
+  (reduce (fn [seen n-bodies]
+            (if (seen n-bodies)
+              (reduced (count seen))
+              (conj seen n-bodies)))
+          #{}
+          (simulate n-bodies)))
+
 (def input (init-n-bodies
             [[14, 2, 8]
              [7, 4, 10]
@@ -81,7 +88,9 @@
 
 (defn solve
   [_]
-  {:part1 (as-> input i
-            (simulate i 1000)
-            (map total-energy i)
-            (apply + i))})
+  {:total-energy (as-> input i
+                   (simulate i)
+                   (nth i 1000)
+                   (map total-energy i)
+                   (apply + i))
+   :cycle-time (cycle-time (simulate input))})

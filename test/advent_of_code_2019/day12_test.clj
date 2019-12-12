@@ -69,11 +69,12 @@
                     [{ :pos [ 2,  1, -3] :vel [-3, -2,  1]}
                      { :pos [ 1, -8,  0] :vel [-1,  1,  3]}
                      { :pos [ 3, -6,  1] :vel [ 3,  2, -3]}
-                     { :pos [ 2,  0,  4] :vel [ 1, -1, -1]}]]]
+                     { :pos [ 2,  0,  4] :vel [ 1, -1, -1]}]]
+          actual (simulate example1-1)]
       (->> expected
            (map-indexed vector)
            (map (fn [[n e]]
-                  (is (= e (simulate example1-1 n)))))
+                  (is (= e (nth actual n)))))
            (doall))))
 
 
@@ -82,3 +83,15 @@
     (is (= [6 5 8 3] (map kinetic-energy energy-inputs)))
     (is (= [36 45 80 18] (map total-energy energy-inputs)))
     ))
+
+(def example2-1
+  (init-n-bodies [[-8, -10, 0]
+                  [5, 5, 10]
+                  [2, -7, 3]
+                  [9, -8, -3]]))
+
+(deftest day12-part2
+  (testing "example 1"
+    (is (= 2772 (cycle-time example1-1))))
+  (testing "example 2"
+    (is (= 4686774924 (time (cycle-time example2-1))))))
