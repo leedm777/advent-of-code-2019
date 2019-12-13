@@ -187,6 +187,13 @@
         st (assoc st :output (pop (:output st)))]
     [out st]))
 
+(defn int-read-all-output
+  "Reads all output as a vector"
+  [st]
+  (let [out (vec (:output st))
+        st (assoc st :output empty-queue)]
+    (out st)))
+
 (defn int-halted?
   "Returns true if the given program has halted."
   [st]
@@ -197,5 +204,5 @@
   (as-> input i
     (s/trim i)
     (s/split i #",")
-    (map bigint i)
+    (map #(Long/parseLong %) i)
     (vec i)))
