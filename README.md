@@ -83,6 +83,9 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
  - `day12`
    - Laziness causes stack overflow errors when a ton of work gets chained up.
      - Had to use `mapv` instead of `map` in a few places to avoid SO errors
+   - Optimizing part 2 required actual cleverness; hadn't really needed that yet.
+     - Each axis is independent, and the cycles for each axis is pretty findable. the
+       total cycle time is the least-common-multiple of the cycle time for each axis.
 
 ## License
 

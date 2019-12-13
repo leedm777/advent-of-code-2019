@@ -71,14 +71,43 @@
   (* (potential-energy moon)
      (kinetic-energy moon)))
 
-(defn cycle-time
-  [n-bodies]
+(defn split-axis
+  [moon]
+  (let [{:keys [pos vel]} moon
+        pos-vel-pairs (mapv vector pos vel)]
+    (->> pos-vel-pairs
+         (mapv (fn [[pos vel]] { :pos [pos], :vel [vel]})))))
+
+(defn cycle-time-single-axis
+  [n-bodies-single-axis]
   (reduce (fn [seen n-bodies]
             (if (seen n-bodies)
               (reduced (count seen))
               (conj seen n-bodies)))
           #{}
-          (simulate n-bodies)))
+          (simulate n-bodies-single-axis)))
+
+;; from https://rosettacode.org/wiki/Least_common_multiple#Clojure
+(defn gcd
+  [a b]
+  (if (zero? b)
+    a
+    (recur b, (mod a b))))
+
+(defn lcm
+  [a b]
+  (/ (* a b) (gcd a b)))
+
+;; to calculate the lcm for a variable number of arguments
+(defn lcmv [& v] (reduce lcm v))
+
+(defn cycle-time
+  [n-bodies]
+  (->> n-bodies
+       (mapv split-axis)
+       (apply map vector)
+       (mapv cycle-time-single-axis)
+       (apply lcmv)))
 
 (def input (init-n-bodies
             [[14, 2, 8]
@@ -93,4 +122,5 @@
                    (nth i 1000)
                    (map total-energy i)
                    (apply + i))
-   :cycle-time (cycle-time (simulate input))})
+   :cycle-time (cycle-time input)})
+;; {"day12" {:total-energy 9139, :cycle-time 420788524631496}}
