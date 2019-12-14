@@ -192,7 +192,7 @@
   [st]
   (let [out (vec (:output st))
         st (assoc st :output empty-queue)]
-    (out st)))
+    [out st]))
 
 (defn int-halted?
   "Returns true if the given program has halted."
