@@ -86,6 +86,9 @@ My solutions for the [2019 Advent of Code](https://adventofcode.com/2019)
    - Optimizing part 2 required actual cleverness; hadn't really needed that yet.
      - Each axis is independent, and the cycles for each axis is pretty findable. the
        total cycle time is the least-common-multiple of the cycle time for each axis.
+ - `day13`
+   - Today's puzzle made me unreasonably happy
+   - I might want to optimize my int-code computer
 
 ## License
 
