@@ -1,5 +1,6 @@
 (ns advent-of-code-2019.day13
-  (:require [advent-of-code-2019.int-code :refer :all]))
+  (:require [advent-of-code-2019.int-code :refer :all]
+            [clojure.string :as s]))
 
 (def tile-empty 0)
 (def tile-wall 1)
@@ -9,8 +10,8 @@
 
 (def render-tile
   {tile-empty \ ,
-   tile-wall \u2588
-   tile-block \=
+   tile-wall \#
+   tile-block \u2588
    tile-paddle \-
    tile-ball \*})
 
@@ -63,9 +64,11 @@
 
 (defn play-game
   [game]
-  (print (str (char 27) "[2J")) ; clear screen
-  (print (str (char 27) "[;H")) ; move cursor to the top left corner of the screen
-  (clojure.pprint/pprint (render-game game))
+  (comment
+    (print (str (char 27) "[2J") ; clear screen
+           (str (char 27) "[;H") ; move cursor to the top left corner of the screen
+           )
+    (println (s/join "\n" (render-game game))))
   (if (int-halted? (:brain game))
     (:score game)
     (let [{:keys [ball-x paddle-x]} game
@@ -79,18 +82,17 @@
 (defn solve
   [input]
   (let [
-        ;; demo-game  (-> input
-        ;;           (int-parse)
-        ;;           (init-game))
+        demo-game  (-> input
+                       (int-parse)
+                       (init-game))
         running-game (-> input
                          (int-parse)
                          (assoc 0 2) ;; insert quarters
                          (init-game))]
     {
-     ;; :block-count (->> demo-game
-     ;;                   (:output)
-     ;;                   (partition 3)
-     ;;                   (map #(nth % 2))
-     ;;                   (filter #(= tile-block %))
-     ;;                   (count))
+     :block-count (->> demo-game
+                       (:by-pos)
+                       (vals)
+                       (filter #(= tile-block %))
+                       (count))
      :win-game (play-game running-game)}))
