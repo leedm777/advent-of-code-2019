@@ -2,13 +2,6 @@
   (:require [clojure.string :as s]
             [advent-of-code-2019.int-code :refer :all]))
 
-(defn init-robot
-  [brain]
-  {:position [0 0]
-   :direction north
-   :panels {}
-   :brain brain})
-
 (def north [0 1])
 (def south [0 -1])
 (def east [1 0])
@@ -23,6 +16,13 @@
             east south
             south west
             west north})
+
+(defn init-robot
+  [brain]
+  {:position [0 0]
+   :direction north
+   :panels {}
+   :brain brain})
 
 (defn turn-left
   [robot]
