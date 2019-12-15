@@ -177,8 +177,11 @@
 (defn int-resume-input
   "Resumes an int-code program with additional input."
   [st inputs]
-  (let [input (:input st)]
-    (int-exec (merge st { :input (apply conj input inputs), :paused false }))))
+  (if-not (sequential? inputs) ;; I keep calling it with single inputs...
+    (recur st [inputs])
+    (let [input (:input st)]
+      (println "Resuming...")
+      (int-exec (merge st { :input (apply conj input inputs), :paused false })))))
 
 (defn int-read-output
   "Reads a value from output."
