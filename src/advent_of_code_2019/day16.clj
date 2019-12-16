@@ -1,13 +1,18 @@
 (ns advent-of-code-2019.day16
   (:require [clojure.string :as s]))
 
-(defn base-pattern
-  [n]
-  (->> [0 1 0 -1]
-       (map #(repeat n %))
-       (repeat)
-       (flatten)
-       (drop 1)))
+(def base-pattern
+  (memoize
+   (fn [n]
+     (->> [0 1 0 -1]
+          ;; repeat each digit n times
+          (map #(repeat n %))
+          ;; repeat those repeated digits infinitely
+          (repeat)
+          ;; flatten the list
+          (flatten)
+          ;; skip the first one
+          (drop 1)))))
 
 (defn parse-signal
   [input]
@@ -34,8 +39,18 @@
                       (mapv vector signal)
                       (mapv #(apply * %))
                       (apply +)
-                      (last-digit)))))
-    ))
+                      (last-digit)))))))
+
+(defn long-fft
+  [signal]
+  (let [long-signal (flatten (repeat 10000 signal))
+        addr (->> signal
+                  (take 8)
+                  (s/join)
+                  (Long/parseLong))
+        final-phase (nth (iterate fft long-signal) 100)
+        message (subvec final-phase addr (+ addr 8))
+        ]))
 
 (defn solve
   [input]
