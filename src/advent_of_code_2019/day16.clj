@@ -36,8 +36,7 @@
     (->> iter
          (mapv (fn [i]
                  (->> (base-pattern i)
-                      (mapv vector signal)
-                      (mapv #(apply * %))
+                      (mapv * signal)
                       (apply +)
                       (last-digit)))))))
 
