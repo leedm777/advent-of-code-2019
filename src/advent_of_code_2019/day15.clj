@@ -13,16 +13,13 @@
    east [1 0]
    west [-1 0]})
 
-(def hit-wall 0)
-(def moved 1)
-(def found-oxygen-system 2)
-
 (defn init-robot
   [brain]
   {:brain brain
    :map {[0 0] :robot}
    :pos [0 0]
-   :oxygen-system nil})
+   :oxygen-system nil
+   :path-home []})
 
 (defn move
   [pos direction]
@@ -30,6 +27,20 @@
        (delta-pos)
        (map vector pos)
        (map (partial apply +))))
+
+(defn pick
+  [s]
+  (first (shuffle s)))
+
+(defn choose-direction
+  [robot]
+  (let [neighbors (->> [north south east west]
+                       (group-by #(get-in robot [:map (move (:pos robot) %)] :unknown)))
+        {:keys [unknown blank]} neighbors]
+    (cond
+      (some? unknown) (pick unknown)
+      true (pick blank))))
+
 
 (defn move-robot
   [robot direction]
@@ -39,14 +50,16 @@
         [result brain] (int-read-output brain)]
     (case result
       ;; 0 hit wall
-      0      (merge robot
-                    {:brain brain
-                     :map (assoc map next-pos :wall)})
+      0 (merge robot
+               {:brain brain
+                :map (assoc map next-pos :wall)})
       ;; 1 moved
       1 (merge robot
                {:brain brain
                 :pos next-pos
-                :map (merge map {pos :blank
+                :map (merge map {pos (if (= [0 0] pos)
+                                       :origin
+                                       :blank)
                                  next-pos :robot})
                 })
       ;; 2 found oxygen system
@@ -55,8 +68,7 @@
                 :pos next-pos
                 :map (merge map {pos :blank
                                  next-pos :oxygen-system})
-                :oxygen-system next-pos})
-      )))
+                :oxygen-system next-pos}))))
 
 (defn draw-map
   [robot]
@@ -76,6 +88,7 @@
                                    :wall \#
                                    :robot \D
                                    :oxygen-system \O
+                                   :origin \+
                                    :unvisited \ ))))))))
 
 (defn find-oxygen-system
@@ -83,7 +96,7 @@
   (draw-map robot)
   (if-let [oxygen-system (:oxygen-system robot)]
     oxygen-system
-    (recur (move-robot robot (first (shuffle [north south east west]))))))
+    (recur (move-robot robot (choose-direction robot)))))
 
 (defn solve
   [input]
@@ -91,3 +104,29 @@
         brain (int-code program)
         robot (init-robot brain)]
     {:oxygen-system (find-oxygen-system robot)})  )
+
+(def partial-map "
+                          #######
+                          #.......#
+                   #      #.#####.#
+                  #+#     #.#.....#
+       ###        #.## ####.#.####
+      #...#       #...#.....#...#
+ .## ##.#.###########.#.#######.#
+ .......#.#...........#.#.....#.#
+ .#######.#.###########.#.###.#.#
+        #.#...#...........#...#.#
+ ### ####.###.#############.###.#
+#...#...#.#...#.......#.....#...#
+#.#.#.#.#.#.###.#####.#.#####.##
+#.#...#.#.#.#...#...#...#.#...#
+#.#####.#.#.#.###.#######.#.##
+#.#..O#.#.#...#.......#.....#
+#.#.###.#.#########.#.#.######
+#.#.#.......#.......#.#.......#
+#.#.#.#######.#.#############.##
+#.#.....#...#.#.........#...#...#
+#.#######.#.#.#########.#.#.###.#
+#.........#...........#...#.....#
+ ######### ########### ### #####
+")
