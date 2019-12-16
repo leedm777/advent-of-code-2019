@@ -13,11 +13,18 @@
    east [1 0]
    west [-1 0]})
 
+(def opposite
+  {north south
+   south north
+   east west
+   west east})
+
 (defn init-robot
   [brain]
   {:brain brain
    :map {[0 0] :robot}
    :pos [0 0]
+   :last-direction north
    :oxygen-system nil
    :path-home []})
 
@@ -39,12 +46,16 @@
         {:keys [unknown blank]} neighbors]
     (cond
       (some? unknown) (pick unknown)
-      true (pick blank))))
+      (= 1 (count blank)) (first blank)
+      true (pick (remove #(= % (opposite (:last-direction robot))) blank)))))
 
+(defn update-path
+  [path pos]
+  (conj (vec (take-while #(not= pos %) path)) pos))
 
 (defn move-robot
   [robot direction]
-  (let [{:keys [brain map pos]} robot
+  (let [{:keys [brain map pos path-home ]} robot
         next-pos (move pos direction)
         brain (int-resume-input brain direction)
         [result brain] (int-read-output brain)]
@@ -56,7 +67,9 @@
       ;; 1 moved
       1 (merge robot
                {:brain brain
+                :last-direction direction
                 :pos next-pos
+                :path-home (update-path path-home next-pos)
                 :map (merge map {pos (if (= [0 0] pos)
                                        :origin
                                        :blank)
@@ -65,7 +78,9 @@
       ;; 2 found oxygen system
       2 (merge robot
                {:brain brain
+                :last-direction direction
                 :pos next-pos
+                :path-home (update-path path-home next-pos)
                 :map (merge map {pos :blank
                                  next-pos :oxygen-system})
                 :oxygen-system next-pos}))))
@@ -94,8 +109,8 @@
 (defn find-oxygen-system
   [robot]
   (draw-map robot)
-  (if-let [oxygen-system (:oxygen-system robot)]
-    oxygen-system
+  (if (:oxygen-system robot)
+    (count (:path-home robot))
     (recur (move-robot robot (choose-direction robot)))))
 
 (defn solve
