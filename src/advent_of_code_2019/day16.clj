@@ -11,6 +11,12 @@
   [n]
   (Math/abs (rem n 10)))
 
+;; idea for optimization
+;;  - pass in signal-repeats instead of repeating the signal
+;;  - use (lcm (count signal) (* i 4))  to determine the repeated part of the signal
+;;  - use (quot) to figure out how many times that repeated section repeats
+;;  - use (rem) to figure out the length of the final tail section
+;;  - multiply, add, last-digit, etc
 (defn fft-n
   "Finds the nth term in the FFT for a signal"
   [signal i]

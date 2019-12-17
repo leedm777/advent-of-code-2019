@@ -24,6 +24,7 @@
   {:brain brain
    :map {[0 0] :robot}
    :pos [0 0]
+   :todo [[0 0]]
    :last-direction north
    :oxygen-system nil
    :path-home []})
@@ -41,7 +42,10 @@
 
 (defn choose-direction
   [robot]
-  (let [neighbors (->> [north south east west]
+  ;; if pos != mapping-pos, and mapping-pos has unknown neighbors, move back
+  ;; if pos has an unknown neighbor, pick the first and move there
+  ;; if pos has no unknown neighbors, move in the direction of a pos with unknown neighbors
+  (let [neighbors (->> [north east south west]
                        (group-by #(get-in robot [:map (move (:pos robot) %)] :unknown)))
         {:keys [unknown blank]} neighbors]
     (cond
