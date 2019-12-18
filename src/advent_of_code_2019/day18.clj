@@ -1,6 +1,7 @@
 (ns advent-of-code-2019.day18
   (:require [advent-of-code-2019.util :refer :all]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [clojure.set]))
 
 (def up [0 -1])
 (def down [0 1])
@@ -49,9 +50,35 @@
              :doors (dissoc doors door)
              :nodes (conj nodes loc)}))))
 
+(defn tap
+  [v]
+  (println v)
+  v)
+
+(defn reachable-nodes
+  [{:keys [neighbors loc]}]
+  (loop [reachable #{}
+         next #{loc}]
+    (if (empty? next)
+      reachable
+      (let [r (clojure.set/union reachable next)
+            n (->> next
+                   (select-keys neighbors)
+                   (vals)
+                   (apply concat)
+                   (set)
+                   (#(clojure.set/difference % r)))
+            ]
+        (recur r n)))))
+
+(defn reachable-keys
+  [passages]
+  (let [reachable (reachable-nodes passages)]
+    (filter (fn [[key pos]] (reachable pos)) (:keys passages))))
+
 (defn find-keys
   [g])
 
 (defn solve
   [input]
-  {:steps-to-find-keys (plot-passages input)})
+  {:steps-to-find-keys (reachable-keys (plot-passages input))})
