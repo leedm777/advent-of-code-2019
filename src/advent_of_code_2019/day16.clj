@@ -6,7 +6,8 @@
   [input]
   (->> input
        (s/trim)
-       (map #(- (int %) (int \0)))))
+       (map #(- (int %) (int \0)))
+       (vec)))
 
 (defn fft-n
   "Finds the nth term in the FFT for a signal"
@@ -44,28 +45,25 @@
        (map #(apply + %))
        (map last-digit)))
 
-(defn fft-last-half
-  [signal]
-  (let [len (count signal)
-        [res] (reduce (fn [[res acc] n]
+(defn fft-reduction
+  [partial-signal]
+  (let [[res] (reduce (fn [[res acc] n]
                         (let [acc (+ acc n)
                               next (last-digit acc)]
                           [(cons next res) acc]))
                       ['() 0]
-                      (reverse (subvec signal (quot len 2))))]
+                      (reverse (vec partial-signal)))]
     res))
+
+(defn fft-last-half
+  [signal]
+  (fft-reduction (subvec signal (quot (count signal) 2))))
 
 (defn fft
   [signal]
-  (comment (let [signal-length (count signal)
-                 iter (range (dec signal-length) -1 -1)
-                 fft-n (partial fft-n signal)]
-             (println signal-length)
-             (->> iter
-                  (mapv fft-n))))
-  ;; 1st 1/4 of the signal has to be computed as above
-  ;; 2nd 1/4 is just a sum of a subvec
-  ;; final half can be reduced for the whole vector
+  ;;   0 to 1/3 of the signal has to be computed as above
+  ;; 1/3 to 1/2 is just a sum of a subvec
+  ;; 1/2 to end can be reduced for the whole vector
   (vec
    (concat (fft-first-quarter signal)
            (fft-second-quarter signal)
@@ -76,18 +74,19 @@
 ;; have repeats, so it won't help on the remaining 99 iterations
 (defn long-fft
   [signal]
-  (let [long-signal (flatten (repeat 10000 signal))
+  (let [long-signal (vec (flatten (repeat 10000 signal)))
         addr (->> signal
                   (take 7)
                   (s/join)
-                  (Long/parseLong))
-        final-phase (nth (iterate fft long-signal) 100)
-        _ (println addr "/" (count final-phase))
-        message (subvec final-phase addr (+ addr 8))]
-    message))
+                  (Long/parseLong))]
+    (if (< addr (/ (count long-signal) 2))
+      "sub-optimal; giving up"
+      (take 8 (nth (iterate fft-reduction (subvec long-signal addr))
+                   100)))))
 
 (defn solve
   [input]
   (let [signal (parse-signal input)]
     {:first-fft (time (s/join (take 8 (nth (iterate fft signal)
-                                           100))))}))
+                                           100))))
+     :long-fft (time (s/join (long-fft signal)))}))
