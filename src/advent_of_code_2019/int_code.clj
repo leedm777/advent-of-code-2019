@@ -1,12 +1,6 @@
 (ns advent-of-code-2019.int-code
-  (:require [clojure.string :as s]))
-
-(def empty-queue clojure.lang.PersistentQueue/EMPTY)
-
-(defmethod print-method clojure.lang.PersistentQueue [q, w] ; Overload the printer for queues so they look like fish
-  (print-method '<- w)
-  (print-method (seq q) w)
-  (print-method '-< w))
+  (:require [clojure.string :as s]
+            [advent-of-code-2019.util :refer :all]))
 
 (defn initial-state
   "Initializes the int-code computer"

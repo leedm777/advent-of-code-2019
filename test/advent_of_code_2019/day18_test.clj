@@ -47,13 +47,13 @@
 
 (deftest day18-part1
   (testing "ex1"
-    (is (= 8 (find-keys (parse-map ex1)))))
+    (is (= 8 (find-keys (plot-passages ex1)))))
   (testing "ex2"
-    (is (= 86 (find-keys (parse-map ex2)))))
+    (is (= 86 (find-keys (plot-passages ex2)))))
   (testing "ex3"
-    (is (= 132 (find-keys (parse-map ex3)))))
+    (is (= 132 (find-keys (plot-passages ex3)))))
   (testing "ex4"
-    (is (= 136 (find-keys (parse-map ex4)))))
+    (is (= 136 (find-keys (plot-passages ex4)))))
   (testing "ex5"
-    (is (= 81 (find-keys (parse-map ex5)))))
+    (is (= 81 (find-keys (plot-passages ex5)))))
   )

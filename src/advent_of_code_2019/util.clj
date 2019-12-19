@@ -1,10 +1,22 @@
 (ns advent-of-code-2019.util
   (:require [clojure.string :as s]))
 
+(def empty-queue clojure.lang.PersistentQueue/EMPTY)
+
+(defmethod print-method clojure.lang.PersistentQueue [q, w] ; Overload the printer for queues so they look like fish
+  (print-method '<- w)
+  (print-method (seq q) w)
+  (print-method '-< w))
+
 (defn last-digit
   "Return the last digit of the given number."
   [n]
   (Math/abs (rem n 10)))
+
+(defn tap
+  [x]
+  (clojure.pprint/pprint x)
+  x)
 
 (defn parse-map
   "Parses a map into coordinates and characters"
