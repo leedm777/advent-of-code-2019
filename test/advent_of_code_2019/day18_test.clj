@@ -57,3 +57,7 @@
   (testing "ex5"
     (is (= 81 (find-keys (plot-passages ex5)))))
   )
+
+;; [5092 {:id [[12 5] #{\c \h \i \j \k \l \m \n \o \p}], :distance 35}]
+;; [5094 {:id [[12 5] #{\a \c \i \j \k \l \m \n \o \p}], :distance 35}]
+;; [5094 {:id [[12 5] #{\c \d \i \j \k \l \m \n \o \p}], :distance 35}]

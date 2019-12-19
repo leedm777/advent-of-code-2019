@@ -1,5 +1,6 @@
 (ns advent-of-code-2019.util
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [clojure.pprint]))
 
 (def empty-queue clojure.lang.PersistentQueue/EMPTY)
 

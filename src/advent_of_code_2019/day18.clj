@@ -52,8 +52,7 @@
                     :nodes (conj nodes door-loc)})
             (update-neighbors)))
       ;; no key, just return the passages
-      passages))
-  )
+      passages)))
 
 ;; Use something similar to Dijkstra's algorithm
 ;;  - Consider [pos keys] as the node
@@ -62,7 +61,7 @@
 (defn make-node
   ([passages] (make-node passages (:entry passages) 0))
   ([passages loc distance]
-   {:id [loc (:keys passages)]
+   {:id [loc (-> passages (:keys) (vals) (set))]
     :loc loc
     :passages passages
     :distance distance}))
@@ -82,18 +81,21 @@
                               Long/MAX_VALUE))))
          (vec))))
 
+(def ctr (atom 0))
+
 (defn map-seq
   ([passages]
    (let [visited {}
          unvisited (conj empty-queue (make-node passages))]
      (map-seq visited unvisited)))
   ([visited unvisited]
-   (println (count unvisited))
    (let [next-node (peek unvisited)
          unvisited (pop unvisited)
          new-neighbors (find-new-neighbors next-node visited)
          visited (assoc visited (:id next-node) next-node)
          unvisited (apply conj unvisited new-neighbors)]
+     (if (= 0 (mod (swap! ctr inc) 10000))
+       (println (count unvisited) (:distance next-node) (count (:keys (:passages next-node)))))
      (cons next-node (lazy-seq (map-seq visited unvisited))))))
 
 (defn find-keys
