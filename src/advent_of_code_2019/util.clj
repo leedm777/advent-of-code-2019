@@ -30,6 +30,20 @@
        ;; flatten out two levels
        (apply concat)))
 
+(defn render-map
+  ([m] (render-map m identity))
+  ([m f]
+   (let [k (keys m)
+         min-x (reduce min (mapv first k))
+         max-x (reduce max (mapv first k))
+         min-y (reduce min (mapv second k))
+         max-y (reduce max (mapv second k))
+         ]
+     (s/join "\n"
+             (for [y (range min-y (inc max-y))]
+               (s/join (for [x (range min-x (inc max-y))]
+                         (f (get m [x y] \ )))))))))
+
 (defn pos-move
   "Move a position by the given delta"
   [pos delta]

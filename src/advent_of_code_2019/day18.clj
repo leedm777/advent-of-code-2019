@@ -75,6 +75,11 @@
          (filter #(nodes %))
          (mapv #(make-node (check-key passages %) % (inc distance)))
          (filter (fn [node]
+                   ;; TODO - there's a lot of paths we could eliminate
+                   ;;  - if two nodes (a and b) have the same loc
+                   ;;  - and a has a greater distance than or equal to b
+                   ;;  - and a has found a subset of the keys b has found
+                   ;;  - otherwise, keep both nodes
                    (< (inc distance)
                       (get-in visited
                               [(:id node) :distance]
@@ -109,7 +114,7 @@
 
 (defn solve
   [input]
-  {:steps-to-find-keys (find-keys (parse-map input))})
+  {:steps-to-find-keys (find-keys (plot-passages input))})
 
 ;; (defn tap
 ;;   [v]
