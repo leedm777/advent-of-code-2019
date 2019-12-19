@@ -7,12 +7,16 @@
                            y (range 0 50)]
                        [x y])))
 
+(defn test-coords
+  [drone pos]
+  (let [drone (int-resume-input drone pos)
+        [pulled] (int-read-output drone)]
+    pulled))
+
 (defn full-map
   [drone]
   (for [pos full-range]
-    (let [drone (int-resume-input drone pos)
-          [pulled] (int-read-output drone)]
-      [pos pulled])))
+    [pos (test-coords drone pos)]))
 
 (defn count-pulls
   [m]
