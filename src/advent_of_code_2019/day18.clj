@@ -69,7 +69,7 @@
 (defn find-new-neighbors
   [node visited]
   (let [{:keys [loc passages distance]} node
-        {:keys [keys nodes]} passages]
+        {:keys [nodes]} passages]
     (->> dirs
          (mapv (partial pos-move loc))
          (filter #(nodes %))
@@ -115,29 +115,3 @@
 (defn solve
   [input]
   {:steps-to-find-keys (find-keys (plot-passages input))})
-
-;; (defn tap
-;;   [v]
-;;   (println v)
-;;   v)
-
-;; (defn reachable-nodes
-;;   [{:keys [neighbors loc]}]
-;;   (loop [reachable #{}
-;;          next #{loc}]
-;;     (if (empty? next)
-;;       reachable
-;;       (let [r (clojure.set/union reachable next)
-;;             n (->> next
-;;                    (select-keys neighbors)
-;;                    (vals)
-;;                    (apply concat)
-;;                    (set)
-;;                    (#(clojure.set/difference % r)))
-;;             ]
-;;         (recur r n)))))
-
-;; (defn reachable-keys
-;;   [passages]
-;;   (let [reachable (reachable-nodes passages)]
-;;     (filter (fn [[key pos]] (reachable pos)) (:keys passages))))
