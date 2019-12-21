@@ -94,14 +94,16 @@
          unvisited (conj empty-queue (make-node passages))]
      (map-seq visited unvisited)))
   ([visited unvisited]
-   (let [next-node (peek unvisited)
-         unvisited (pop unvisited)
-         new-neighbors (find-new-neighbors next-node visited)
-         visited (assoc visited (:id next-node) next-node)
-         unvisited (apply conj unvisited new-neighbors)]
-     (if (= 0 (mod (swap! ctr inc) 10000))
-       (println (count unvisited) (:distance next-node) (count (:keys (:passages next-node)))))
-     (cons next-node (lazy-seq (map-seq visited unvisited))))))
+   (if (empty? unvisited)
+     '()
+     (let [next-node (peek unvisited)
+           unvisited (pop unvisited)
+           new-neighbors (find-new-neighbors next-node visited)
+           visited (assoc visited (:id next-node) next-node)
+           unvisited (apply conj unvisited new-neighbors)]
+       (if (= 0 (mod (swap! ctr inc) 10000))
+         (println (count unvisited) (:distance next-node) (count (:keys (:passages next-node)))))
+       (cons next-node (lazy-seq (map-seq visited unvisited)))))))
 
 (defn find-keys
   [passages]
