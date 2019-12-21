@@ -70,8 +70,17 @@
 (defn connect-nodes
   "Connects two nodes in a graph bidirectionally."
   [graph a b]
-  (-> (assoc-in [a (count (get graph a))] b)
+  (-> graph
+      (assoc-in [a (count (get graph a))] b)
       (assoc-in [b (count (get graph b))] a)))
+
+(defn neighbors?
+  "Returns true if two positions are neighbors"
+  [x y]
+  (->> (mapv - x y)
+       (mapv #(Math/abs %))
+       (reduce +)
+       (= 1)))
 
 ;; from https://rosettacode.org/wiki/Least_common_multiple#Clojure
 (defn gcd

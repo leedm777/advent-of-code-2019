@@ -1,5 +1,6 @@
 (ns advent-of-code-2019.day20-test
   (:require [clojure.test :refer :all]
+            [advent-of-code-2019.util :refer :all]
             [advent-of-code-2019.day20 :refer :all]
             [clojure.string :as s]))
 
@@ -28,9 +29,9 @@
 
 (deftest day20-part1
   (testing "example 1"
-    (is (= [19 2] (:entrance ex1-parsed)))
+    (is (= [9 2] (:entrance ex1-parsed)))
     (is (= [13 16] (:exit ex1-parsed)))
-    (is (= [[19 5] [2 8]] (get-in ex1-parsed [:neighbors [19 6]])))))
+    (is (= [[9 5] [2 8]] (get-in ex1-parsed [:graph [9 6]])))))
 
 (def ex2
   (s/join "\n"
