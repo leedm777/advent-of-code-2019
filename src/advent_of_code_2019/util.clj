@@ -49,6 +49,30 @@
   [pos delta]
   (mapv + pos delta))
 
+(def up [0 -1])
+(def down [0 1])
+(def left [-1 0])
+(def right [1 0])
+(def dirs [up down left right])
+
+(defn graph-maze
+  "Graphs a maze by the given list of nodes"
+  [nodes]
+  (let [nodes (set nodes)]
+    (reduce (fn [graph node]
+              (assoc graph
+                node (->> dirs
+                          (mapv (partial pos-move node))
+                          (filterv (partial nodes)))))
+            {}
+            nodes)))
+
+(defn connect-nodes
+  "Connects two nodes in a graph bidirectionally."
+  [graph a b]
+  (-> (assoc-in [a (count (get graph a))] b)
+      (assoc-in [b (count (get graph b))] a)))
+
 ;; from https://rosettacode.org/wiki/Least_common_multiple#Clojure
 (defn gcd
   "Find the greated common denominator of the given numbers."
