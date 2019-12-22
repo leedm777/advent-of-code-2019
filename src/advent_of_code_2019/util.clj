@@ -89,6 +89,17 @@
        (reduce +)
        (= 1)))
 
+(defn ascii-to-str
+  [chs]
+  (s/join (map (fn [c]
+                 (if (> c 128)
+                   c
+                   (char c))) chs)))
+
+(defn str-to-ascii
+  [st]
+  (mapv int st))
+
 ;; from https://rosettacode.org/wiki/Least_common_multiple#Clojure
 (defn gcd
   "Find the greated common denominator of the given numbers."
