@@ -21,16 +21,30 @@
 (def runcode
   (str-to-ascii
     (s/join "\n"
+            ;; 3 ops, 9 locs, 2 reg
+            ;;  -> 54 possible instructions
             ;; at most 15 instructions
-            ;; jumps 4 spaces, but needs A to be villed
-            [;; if E is filled, but any of A-D are blank, JUMP
-             "NOT A J"
+            ;;  -> 9.68E25 possible programs
+            ["NOT A J"
              "NOT B T"
              "OR T J"
              "NOT C T"
              "OR T J"
              "AND D J"
-             "AND E J"
+             ;; But if H is blank, we won't make a double jump
+             ;;.................
+             ;;.................
+             ;;......@..........
+             ;;#####.#.##.######
+             "NOT H T"
+             "NOT T T"
+             ;; But we can make it if E is filled
+             ;;.................
+             ;;.................
+             ;;....@............
+             ;;#####...###...###
+             "OR E T"
+             "AND T J"
              "RUN"
              ""])))
 (defn solve
@@ -45,7 +59,7 @@
         [walk-result] (int-read-all-output walkbot)
 
         ;; part 2 - send bot out running
-        runbot (int-resume-input springbot runcode)
+        runbot (time (int-resume-input springbot runcode))
         [run-result] (int-read-all-output runbot)
         ]
 
