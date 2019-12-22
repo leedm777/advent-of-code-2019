@@ -74,6 +74,13 @@
       (assoc-in [a (count (get graph a))] b)
       (assoc-in [b (count (get graph b))] a)))
 
+(defn a*
+  [graph start goal]
+  (loop [open #{start}
+         closed #{}]
+    ;; TODO
+    ))
+
 (defn neighbors?
   "Returns true if two positions are neighbors"
   [x y]

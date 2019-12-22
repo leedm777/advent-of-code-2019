@@ -34,7 +34,7 @@
   [[nodes portals]]
   (let [graph (graph-maze (mapv first nodes))
         portals (locate-portals portals (set (keys graph)))
-        graph (reduce (fn [g [label [loc1 loc2]]]
+        graph (reduce (fn [g [_ [loc1 loc2]]]
                         (if (nil? loc2)
                           g
                           (connect-nodes g loc1 loc2)))
@@ -57,43 +57,13 @@
        (partition-by (fn [[k v]] (= v \.)))
        (graph-portals)))
 
+(defn best-path
+  [donut]
+  (a* (:graph donut) (:entrance donut) (:exit donut)))
+
 (defn solve
   [input]
-  (let [donut (parse-donut input)]
-    donut))
-
-;;        outer-left-1 0
-;;        outer-left-2 1
-;;        outer-right-2 (->> locs
-;;                           (mapv first)
-;;                           (apply max))
-;;        outer-right-1 (dec outer-right-2)
-;;
-;;        inner-left-1 (->> locs
-;;                          (mapv first)
-;;                          (filter #(> % 1))
-;;                          (apply min))
-;;        inner-left-2 (inc inner-left-1)
-;;        inner-right-2 (->> locs
-;;                           (mapv first)
-;;                           (filter #(< % outer-lower-1))
-;;                           (apply min))
-;;        inner-right-1 (dec inner-right-2)
-;;
-;;        outer-upper-1 0
-;;        outer-upper-2 1
-;;        outer-lower-2 (->> locs
-;;                           (mapv second)
-;;                           (apply max))
-;;        outer-lower-1 (dec outer-lower-2)
-;;
-;;        inner-upper-1 (->> locs
-;;                          (mapv second)
-;;                          (filter #(> % 1))
-;;                          (apply min))
-;;        inner-upper-2 (inc inner-upper-1)
-;;        inner-lower-2 (->> locs
-;;                           (mapv second)
-;;                           (filter #(< % outer-lower-1))
-;;                           (apply min))
-;;        inner-lower-1 (dec inner-lower-2)
+  (let [donut (parse-donut input)
+        path (best-path donut)]
+    (clojure.pprint/pprint path)
+    { :path-length (count path)}))
