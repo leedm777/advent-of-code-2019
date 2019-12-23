@@ -1,6 +1,7 @@
 (ns advent-of-code-2019.util
   (:require [clojure.string :as s]
-            [clojure.pprint]))
+            [clojure.pprint]
+            [clojure.java.io :as io]))
 
 (def empty-queue clojure.lang.PersistentQueue/EMPTY)
 
@@ -99,6 +100,13 @@
 (defn str-to-ascii
   [st]
   (mapv int st))
+
+(defn input-for
+  [day]
+  (-> day
+      (str ".txt")
+      (io/resource)
+      (slurp)))
 
 ;; from https://rosettacode.org/wiki/Least_common_multiple#Clojure
 (defn gcd

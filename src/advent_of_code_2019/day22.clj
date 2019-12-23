@@ -29,45 +29,49 @@
           [_ cut-n] (re-matches #"cut (-?\d*)" step)
           [deal-into-new-stack] (re-matches #"deal into new stack" step)
           deck (cond
-                 deal-n (deal (Integer/parseInt deal-n) deck)
-                 cut-n (cut (Integer/parseInt cut-n) deck)
+                 deal-n (deal (Long/parseLong deal-n) deck)
+                 cut-n (cut (Long/parseLong cut-n) deck)
                  deal-into-new-stack (reverse deck)
                  true (do
                    (println "Unparsed step: " step)
                    deck))]
       (recur (rest steps) deck))))
 
+;; TODO Not quite right, but even if it were it doesn't complete
+;;      maybe it cycles?
 (defn unshuffle
   [deck-size steps position]
-  (loop [steps steps
-         position position]
-    (if (empty? steps)
-      position
-      (let [step (first steps)
-            [_ deal-n] (re-matches #"deal with increment (\d*)" step)
-            [_ cut-n] (re-matches #"cut (-?\d*)" step)
-            [deal-into-new-stack] (re-matches #"deal into new stack" step)
-            came-from (cond
-                        deal-n (mod (* -1 (Integer/parseInt deal-n) position) deck-size)
-                        cut-n (mod (+ position (Integer/parseInt cut-n)) deck-size)
-                        deal-into-new-stack (- deck-size position))]
-        (recur (rest steps) came-from)))))
+  (let [steps (reverse steps)]
+   (loop [steps steps
+          position position]
+     (if (empty? steps)
+       position
+       (let [step (first steps)
+             [_ deal-n] (re-matches #"deal with increment (\d*)" step)
+             [_ cut-n] (re-matches #"cut (-?\d*)" step)
+             [deal-into-new-stack] (re-matches #"deal into new stack" step)
+             came-from (cond
+                         deal-n (mod (* -1 (Long/parseLong deal-n) position) deck-size)
+                         cut-n (mod (+ position (Long/parseLong cut-n)) deck-size)
+                         deal-into-new-stack (- deck-size position))]
+         (recur (rest steps) came-from))))))
 
 (defn solve
   [input]
   (let [steps (s/split-lines (s/trim input))
         first-shuffle (space-shuffle steps (range 0 10007))
-        second-shuffle (partial unshuffle 119315717514047 (->> steps
-                                                               (reverse)
-                                                               (repeat 101741582076661)
-                                                               (flatten)))
+        second-shuffle (fn [n]
+                         (unshuffle 119315717514047 steps n))
         ]
-    {:first-shuffle (->> first-shuffle
-                         (map-indexed (fn [idx n] [idx n]))
-                         (filter (fn [[_ n]] (= n 2019)))
-                         (first)
-                         (first))
-     :second-shuffle (second-shuffle 2020)
+    {:first-shuffle  (->> first-shuffle
+                          (map-indexed (fn [idx n] [idx n]))
+                          (filter (fn [[_ n]] (= n 2019)))
+                          (first)
+                          (first))
+     :second-shuffle (->> (iterate second-shuffle 2020)
+                          (drop 1)
+                          (filter #(= 2020 %))
+                          (first))
      }))
 ;; 119,315,717,514,047 cards
 ;; 101,741,582,076,661 shuffles
