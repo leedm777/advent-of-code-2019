@@ -88,6 +88,8 @@
 
 (def ctr (atom 0))
 
+;; I could try A*, with h() being the sum of the distance to all the keys?
+;; Or maybe f() including the number of found keys somehow
 (defn map-seq
   ([passages]
    (let [visited {}
