@@ -1,33 +1,36 @@
 (ns advent-of-code-2019.day15
   (:require [advent-of-code-2019.int-code :refer :all]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [advent-of-code-2019.util :refer :all]))
 
 (def north 1)
 (def south 2)
 (def east 3)
 (def west 4)
 
+(def directions [north east south west])
+
 (def delta-pos
   {north [0 1]
    south [0 -1]
-   east [1 0]
-   west [-1 0]})
+   east  [1 0]
+   west  [-1 0]})
 
 (def opposite
   {north south
    south north
-   east west
-   west east})
+   east  west
+   west  east})
 
 (defn init-robot
   [brain]
-  {:brain brain
-   :map {[0 0] :robot}
-   :pos [0 0]
-   :todo [[0 0]]
+  {:brain          brain
+   :map            {[0 0] :robot}
+   :pos            [0 0]
+   :todo           [[0 0]]
    :last-direction north
-   :oxygen-system nil
-   :path-home []})
+   :oxygen-system  nil
+   :path-home      []})
 
 (defn move
   [pos direction]
@@ -51,7 +54,7 @@
     (cond
       (some? unknown) (pick unknown)
       (= 1 (count blank)) (first blank)
-      true (pick (remove #(= % (opposite (:last-direction robot))) blank))))  )
+      true (pick (remove #(= % (opposite (:last-direction robot))) blank)))))
 
 (defn update-path
   [path pos]
@@ -67,28 +70,31 @@
       ;; 0 hit wall
       0 (merge robot
                {:brain brain
-                :map (assoc map next-pos :wall)})
+                :moved false
+                :map   (assoc map next-pos :wall)})
       ;; 1 moved
       1 (merge robot
-               {:brain brain
+               {:brain          brain
+                :moved          true
                 :last-direction direction
-                :pos next-pos
-                :path-home (update-path path-home next-pos)
-                :map (merge map {pos (case pos
-                                       [0 0] :origin
-                                       oxygen-system :oxygen-system
-                                       :blank)
-                                 next-pos :robot})
+                :pos            next-pos
+                :path-home      (update-path path-home next-pos)
+                :map            (merge map {pos      (case pos
+                                                       [0 0] :origin
+                                                       oxygen-system :oxygen-system
+                                                       :blank)
+                                            next-pos :robot})
                 })
       ;; 2 found oxygen system
       2 (merge robot
-               {:brain brain
+               {:brain          brain
+                :moved          true
                 :last-direction direction
-                :pos next-pos
-                :path-home (update-path path-home next-pos)
-                :map (merge map {pos :blank
-                                 next-pos :oxygen-system})
-                :oxygen-system next-pos}))))
+                :pos            next-pos
+                :path-home      (update-path path-home next-pos)
+                :map            (merge map {pos      :blank
+                                            next-pos :oxygen-system})
+                :oxygen-system  next-pos}))))
 
 (defn draw-map
   [robot]
@@ -97,8 +103,8 @@
         max-x (apply max (mapv first (keys map)))
         min-y (apply min (mapv second (keys map)))
         max-y (apply max (mapv second (keys map)))]
-    (print (str (char 27) "[2J") ; clear screen
-           (str (char 27) "[;H") ; move cursor to the top left corner of the screen
+    (print (str (char 27) "[2J")                            ; clear screen
+           (str (char 27) "[;H")                            ; move cursor to the top left corner of the screen
            )
     (println (s/join "\n"
                      (for [y (range max-y (dec min-y) -1)]
@@ -111,39 +117,58 @@
                                    :origin \+
                                    :unvisited \ ))))))))
 
-(defn find-oxygen-system
-  [robot]
-  (draw-map robot)
-  (if (:oxygen-system robot)
-    (count (:path-home robot))
-    (recur (move-robot robot (choose-direction robot)))))
+(defn move-robot-seq
+  ([robot] (move-robot-seq {[0 0] :origin}
+                           (apply conj empty-queue (mapv #(vector robot %) directions))))
+  ([map next]
+   (if (empty? next)
+     '()
+     (do
+       (let [[robot dir] (peek next)
+             robot (assoc robot :map map)
+             robot (move-robot robot dir)
+             {:keys [pos]} robot
+             new-dirs (->> directions
+                           (filter (fn [d]
+                                     (let [d-pos (move pos d)]
+                                       (not (contains? (:map robot) d-pos))))))]
+         (draw-map robot)
+         (println (count next))
+         (if (or (empty? new-dirs)
+                 (not (:moved robot)))
+           (let [m (:map robot)
+                 m (assoc m (:pos robot) :blank)]
+             (cons robot (lazy-seq (move-robot-seq m (pop next)))))
+           (cons robot (lazy-seq (move-robot-seq (:map robot)
+                                                 (apply conj (pop next) (mapv #(vector robot %) new-dirs)))))))))))
 
-(def turn-left
-  {north west
-   west south
-   south east
-   east north})
-
-(defn choose-full-map-direction
+(defn time-to-refill
   [robot]
-  (let [{:keys [last-direction map pos]} robot
-        next-directions (mapv #(inc (mod % 4)) (range last-direction (+ last-direction 4)))
-        next-directions (filterv #(not= :wall (get map (move pos %))))
-        ]
-    (first next-directions)))
-
-(defn find-full-map
-  [robot]
-  (draw-map robot)
-  (recur (move-robot robot (choose-direction robot))))
+  (let [m (:map robot)
+        m (into {} (filter (fn [[_ v]] (not= v :wall)) m))
+        start-at (:oxygen-system robot)]
+    (loop [c 0
+           m m
+           next [start-at]
+           ]
+      (if (empty? m)
+        c
+        (->> next
+             (mapcat #(pos-move next )))))))
 
 (defn solve
   [input]
   (let [program (int-parse input)
         brain (int-code program)
-        robot (init-robot brain)]
-    {;;:oxygen-system (find-oxygen-system robot)
-     :time-to-refill (find-full-map robot)})  )
+        robot (init-robot brain)
+        full-path (move-robot-seq robot)]
+    {:oxygen-system (->> full-path
+                         (filter :oxygen-system)
+                         (first)
+                         (:path-home)
+                         (count))
+     :time-to-refill (time-to-refill (last full-path))
+     }))
 
 (def full-map
   "
@@ -154,7 +179,7 @@
 #.#.#######.#####.#.#.#######.#.#####.#.#
 #.#.....#...#.....#.#.#.....#.#...#.#...#
 #.#####.#.###.#####.#.#.###.#.###.#.###.#
-#...#...#...#.#.....#.#.#...#...#.#...#.#
+#...#...#...#.#.....#D#.#...#...#.#...#.#
 #.###.#####.#.#.#######.###.#####.#.###.#
 #.....#...#...#.......#...#.....#.#.....#
 #.#######.###########.###.#####.#.#.####
@@ -168,7 +193,7 @@
  ####.#.#.#.#.#####.#.#.#.#########.###.#
 #.....#.#...#.#.....#.#.#.#.......#.#...#
 #.#####.#####.###.###.#.#.#.#####.#.#.##
-#.#.#.......#.#...#+#...#.#.#.....#.#.#.#
+#.#.#.......#.#...#.#...#.#.#.....#.#.#.#
 #.#.#.#####.#.#.#.#.#######.#.#####.#.#.#
 #.#...#...#.....#.#...#.....#...#.#...#.#
 #.#####.#.###########.#.#######.#.#.###.#
@@ -179,7 +204,7 @@
 #...#...#.#...#.......#.....#...#...#.#.#
 #.#.#.#.#.#.###.#####.#.#####.###.###.#.#
 #.#...#.#.#.#...#...#...#.#...#.......#.#
-#.#####D#.#.#.###.#######.#.###.#######.#
+#.#####.#.#.#.###.#######.#.###.#######.#
 #.#...#.#.#...#.......#.....#...#.......#
 #.#.###.#.#########.#.#.#######.#.#####.#
 #.#.#.......#.......#.#.......#...#.....#
@@ -187,4 +212,5 @@
 #.#.....#...#.#.........#...#...#...#...#
 #.#######.#.#.#########.#.#.###.#.###.#.#
 #.........#...........#...#.....#.....#.#
- ######### ########### ### ##### ##### # ")
+ ######### ########### ### ##### ##### #
+  ")
