@@ -4,7 +4,7 @@
 
 (defn init-node
   [brain addr]
-  (int-resume-input brain addr))
+  (int-resume-input brain [addr]))
 
 (defn read-packets
   [node]
@@ -14,13 +14,23 @@
         packets (mapv (fn [[a x y]] {:addr a :data [x y]}) packets)]
     [packets brain]))
 
+(defn write-one-input
+  [network]
+  (reduce-kv (fn [network addr node]
+               (let [{:keys [brain input]} node
+                     next-packet (or (peek input) -1)
+                     input (pop input)
+                     brain (int-resume-input brain next-packet)]
+                 (assoc-in network [:nodes addr] {:input input :brain brain})))
+             network
+             (:nodes network)))
+
 (defn init-network
   [num-nodes brain]
-  (let [nodes (->> (range 0 num-nodes)
-                   (mapv (partial init-node brain))
-                   (mapv (fn [node] {:brain node :input empty-queue})))]
-    {:nodes nodes
-     :nat nil}))
+  (->> (range 0 num-nodes)
+       (mapv (partial init-node brain))
+       (mapv (fn [node] {:brain node :input empty-queue}))
+       (#(hash-map :nodes % :nat nil))))
 
 (defn deliver-packets
   [network packets]
@@ -43,42 +53,67 @@
              network
              (:nodes network)))
 
-(defn write-one-input
+(defn print-network
   [network]
-  (reduce-kv (fn [network addr node]
-            (let [{:keys [brain input]} node
-                  next-packet (or (peek input) -1)
-                  input (pop input)
-                  brain (int-resume-input brain next-packet)]
-              (assoc-in network [:nodes addr] {:input input :brain brain})))
-          network
-          (:nodes network)))
+  (clojure.pprint/pprint
+    {:nat   (:nat network)
+     :nodes (map-indexed (fn [addr node]
+                           [addr (:input node) (:output (:brain node))])
+                         (:nodes network))}))
+
+(defn network-settled?
+  [network]
+  (let [{:keys [nodes]} network]
+    (and (some? (:nat network))
+         (every? #(empty (:input %)) nodes)
+         (every? #(empty (:output (:brain %))) nodes))))
 
 (defn run-network
   [network]
   ;; read all outputs
-  (let [network (read-all-outputs network)
-        network (write-one-input network)]
-    network))
-
-(defn print-network
-  [network]
-  (clojure.pprint/pprint (mapv (fn [[addr node]] [addr (:input node) (:output (:brain node))]) network)))
+  (if (network-settled? network)
+    (do
+      (println "SETTLED!!! " (:nat network))
+      (-> network
+          (deliver-packets [{:addr 0 :data (:nat network)}])
+          (recur)))
+    (-> network
+        (read-all-outputs)
+        (write-one-input))))
 
 (defn network-seq
   [network]
   ;;(print-network network)
   (cons network (lazy-seq (network-seq (run-network network)))))
 
+(defn find-dupe-nat
+  [nseq]
+  (println "ohai")
+  (reduce (fn [seen network]
+            (print-network network)
+            (let [{:keys [nat]} network
+                  [_ y] nat]
+              (if (seen y)
+                (reduced y)
+                (do
+                  (clojure.pprint/pprint seen)
+                  (conj seen y)))))
+          #{}
+          nseq))
+
 (defn solve
   [input]
   (let [program (int-parse input)
-        brain (int-code program)]
-    {:first-255 (->> brain
-                     (init-network 50)
-                     (network-seq)
+        brain (int-code program)
+        nseq (->> brain
+                  (init-network 50)
+                  (network-seq))]
+    {
+     :first-255 (->> nseq
                      (drop-while (fn [network]
-                                   (empty? (get-in network [:nat]))))
+                                   (empty? (:nat network))))
                      (first)
                      (:nat)
-                     (second))}))
+                     (second))
+     :first-repeat (find-dupe-nat nseq)
+     }))

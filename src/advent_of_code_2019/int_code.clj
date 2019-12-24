@@ -176,6 +176,11 @@
     (let [input (:input st)]
       (int-exec (merge st { :input (apply conj input inputs), :paused false })))))
 
+(defn int-has-output?
+  "Returns true if output is available"
+  [st]
+  (not-empty (:output st)))
+
 (defn int-read-output
   "Reads a value from output."
   [st]
