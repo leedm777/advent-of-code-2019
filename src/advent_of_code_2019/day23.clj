@@ -28,7 +28,6 @@
     network
     (reduce (fn [network packet]
               (let [{:keys [addr data]} packet]
-                ;;(println addr " <-- " data)
                 (update-in network [addr :input] #(conj % data))))
             network
             packets)))
@@ -61,14 +60,14 @@
         network (write-one-input network)]
     network))
 
-(defn network-seq
-  [network]
-  (print-network network)
-  (cons network (lazy-seq (network-seq (run-network network)))))
-
 (defn print-network
   [network]
   (clojure.pprint/pprint (mapv (fn [[addr node]] [addr (:input node) (:output (:brain node))]) network)))
+
+(defn network-seq
+  [network]
+  ;;(print-network network)
+  (cons network (lazy-seq (network-seq (run-network network)))))
 
 (defn solve
   [input]
@@ -78,7 +77,8 @@
                      (init-network 50)
                      (network-seq)
                      (drop-while (fn [network]
-                                   (println "CHECKING: " (get-in network [255 :input]))
                                    (empty? (get-in network [255 :input]))))
                      (first)
-                     (#(get % 255)))}))
+                     (#(get-in % [255 :input]))
+                     (peek)
+                     (second))}))
