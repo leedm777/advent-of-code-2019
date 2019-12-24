@@ -50,6 +50,46 @@
        (mapv pow2)
        (apply +)))
 
+(defn parse-folded-locs
+  [input]
+  (->> input
+       (parse-map)
+       (filter #(= bug (second %)))
+       (map (fn [[[x y]]] [[0 x y] bug]))
+       (into (sorted-map))))
+
+(def folded-dirs
+  [[0 0 -1]
+   [0 0 1]
+   [0 -1 0]
+   [0 1 0]])
+
+(defn warp-edges
+  [[level pos-x pos-y] [level x y :as neighbor]]
+  (cond
+    ;; edges neighbor the level below
+    (= y -1) [[(dec level) 2 1]]
+    (= y 5) [[(dec level) 2 3]]
+    (= x -1) [[(dec level) 1 2]]
+    (= x 5) [[(dec level) 3 2]]
+    ;; center spots neighbor the level above
+    (= [x y] [2 2]) (cond
+                      (= pos-x 1) (->> (range 0 5) (mapv #(vector (inc level) 0 %)))
+                      (= pos-x 3) (->> (range 0 5) (mapv #(vector (inc level) 4 %)))
+                      (= pos-y 1) (->> (range 0 5) (mapv #(vector (inc level) % 0)))
+                      (= pos-y 3) (->> (range 0 5) (mapv #(vector (inc level) % 4))))
+    ;; everything else is normal
+    :else [neighbor]))
+
+(defn folded-neighbors
+  [pos]
+  ;; [0 *], [4 *], [* 0], [* 4] neighbor (dec level)
+  ;; [2 1], [2 3], [1 2], [3 2] neighbor (inc level)
+  (->> folded-dirs
+       (map #(pos-move pos %))
+       (mapcat (partial warp-edges pos))))
+
+
 (defn solve
   [input]
   {:biodiversity (->> input

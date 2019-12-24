@@ -20,5 +20,13 @@
     (is (= (parse-locs ".....\n.....\n.....\n#....\n.#...") (first-cycle (parse-locs "....#\n#..#.\n#..##\n..#..\n#....")))))
 
   (testing "ex5"
-    (is (= 2129920 (biodiversity (parse-locs ".....\n.....\n.....\n#....\n.#...")))))
-  )
+    (is (= 2129920 (biodiversity (parse-locs ".....\n.....\n.....\n#....\n.#..."))))))
+
+(deftest day24-part2
+  (testing "neighbors"
+    (is (= #{[0 3 2] [0 3 4] [0 2 3] [0 4 3]} (set (folded-neighbors [0 3 3]))))
+    (is (= #{[1 1 0] [1 0 1] [1 2 1] [1 1 2]} (set (folded-neighbors [1 1 1]))))
+    (is (= #{[1 2 0] [1 4 0] [1 3 1] [0 2 1]} (set (folded-neighbors [1 3 0]))))
+    (is (= #{[0 3 3] [0 3 1] [0 4 2] [1 4 0] [1 4 1] [1 4 2] [1 4 3] [1 4 4] } (set (folded-neighbors [0 3 2]))))
+    (is (= #{[1 4 2] [1 3 3] [1 3 1] [2 4 0] [2 4 1] [2 4 2] [2 4 3] [2 4 4]} (set (folded-neighbors [1 3 2]))))
+    ))
