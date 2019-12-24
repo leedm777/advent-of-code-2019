@@ -16,11 +16,11 @@
 
 (defn init-network
   [num-nodes brain]
-  (->> (range 0 num-nodes)
-       (mapv (partial init-node brain))
-       (mapv (fn [node] {:brain node :input empty-queue}))
-       (map-indexed (fn [i n] [i n]))
-       (into {255 {:input empty-queue}})))
+  (let [nodes (->> (range 0 num-nodes)
+                   (mapv (partial init-node brain))
+                   (mapv (fn [node] {:brain node :input empty-queue})))]
+    {:nodes nodes
+     :nat nil}))
 
 (defn deliver-packets
   [network packets]
@@ -28,7 +28,9 @@
     network
     (reduce (fn [network packet]
               (let [{:keys [addr data]} packet]
-                (update-in network [addr :input] #(conj % data))))
+                (if (= addr 255)
+                  (assoc network :nat data)
+                  (update-in network [:nodes addr :input] #(conj % data)))))
             network
             packets)))
 
@@ -36,22 +38,21 @@
   [network]
   (reduce-kv (fn [network addr node]
                (let [[packets node] (read-packets node)
-                     network (assoc-in network [addr :brain] node)]
+                     network (assoc-in network [:nodes addr :brain] node)]
                  (deliver-packets network packets)))
              network
-             network))
+             (:nodes network)))
 
 (defn write-one-input
   [network]
-  (into {} (mapv (fn [[addr node]]
-                   (if (= addr 255)
-                     [addr node]
-                     (let [{:keys [brain input]} node
-                           next-packet (or (peek input) -1)
-                           input (pop input)
-                           brain (int-resume-input brain next-packet)]
-                       [addr {:brain brain :input input}])))
-                 network)))
+  (reduce-kv (fn [network addr node]
+            (let [{:keys [brain input]} node
+                  next-packet (or (peek input) -1)
+                  input (pop input)
+                  brain (int-resume-input brain next-packet)]
+              (assoc-in network [:nodes addr] {:input input :brain brain})))
+          network
+          (:nodes network)))
 
 (defn run-network
   [network]
@@ -77,8 +78,7 @@
                      (init-network 50)
                      (network-seq)
                      (drop-while (fn [network]
-                                   (empty? (get-in network [255 :input]))))
+                                   (empty? (get-in network [:nat]))))
                      (first)
-                     (#(get-in % [255 :input]))
-                     (peek)
+                     (:nat)
                      (second))}))
