@@ -123,3 +123,10 @@
 
 ;; to calculate the lcm for a variable number of arguments
 (defn lcmv [& v] (reduce lcm v))
+
+(defn pow2
+  [n]
+  (case n
+    0 1
+    1 2
+    (* 2 (pow2 (dec n)))))
