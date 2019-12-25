@@ -129,7 +129,7 @@
   ;;(print (str (char 27) "[2J") ; clear screen
   ;;       (str (char 27) "[;H") ; move cursor to the top left corner of the screen
   ;;       )
-  ;;(draw-folded-space locs)
+  ;;(println (draw-folded-space locs))
   (cons locs (lazy-seq (folded-bugs-seq (next-folded-bugs locs)))))
 
 (defn solve
