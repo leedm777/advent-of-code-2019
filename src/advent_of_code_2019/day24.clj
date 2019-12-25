@@ -89,6 +89,21 @@
        (map #(pos-move pos %))
        (mapcat (partial warp-edges pos))))
 
+(defn next-folded-bugs
+  [locs]
+  (->> locs
+       (keys)
+       (mapcat folded-neighbors)
+       (group-by identity)
+       (map (fn [[pos tiles]] [pos (count tiles)]))
+       (map (fn [[pos count]]
+              (cond
+                (= count 2) [pos bug]
+                (and (= count 1) (= bug (get locs pos space))) [pos bug]
+                :else [pos space])))
+       (filter (fn [[pos tile]] (= tile bug)))
+       (into {})))
+
 
 (defn solve
   [input]
