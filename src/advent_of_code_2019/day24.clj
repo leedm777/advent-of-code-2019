@@ -98,11 +98,12 @@
        (mapcat folded-neighbors)
        (group-by identity)
        (map (fn [[pos tiles]] [pos (count tiles)]))
-       (map (fn [[pos count]]
-              (cond
-                (= count 2) [pos bug]
-                (and (= count 1) (= bug (get locs pos space))) [pos bug]
-                :else [pos space])))
+       (map (fn [[pos num-neighbors]]
+              (let [tile (get locs pos space)]
+                (cond
+                  (and (= tile bug) (not= num-neighbors 1)) [pos space]
+                  (and (= tile space) (#{1 2} num-neighbors)) [pos bug]
+                  :else [pos tile]))))
        (filter (fn [[pos tile]] (= tile bug)))
        (into {})))
 
@@ -112,14 +113,16 @@
         min-layer (apply min layers)
         max-layer (apply max layers)]
 
-    (s/join "\n\n"
-     (for [layer (range min-layer (inc max-layer))]
-       (str "Layer " layer "\n"
-            (s/join "\n"
-                    (for [y (range 0 5)]
-                      (s/join
-                        (for [x (range 0 5)]
-                          (get locs [layer x y] space))))))))))
+    (str
+      (s/join "\n\n"
+              (for [layer (range min-layer (inc max-layer))]
+                (str "Depth " layer "\n"
+                     (s/join "\n"
+                             (for [y (range 0 5)]
+                               (s/join
+                                 (for [x (range 0 5)]
+                                   (get locs [layer x y] space))))))))
+      "\n\n-----\n")))
 
 (defn folded-bugs-seq
   [locs]
@@ -134,4 +137,9 @@
   {:biodiversity (->> input
                       (parse-locs)
                       (first-cycle)
-                      (biodiversity))})
+                      (biodiversity))
+   :life-count   (-> input
+                     (parse-folded-locs)
+                     (folded-bugs-seq)
+                     (nth 200)
+                     (count))})
