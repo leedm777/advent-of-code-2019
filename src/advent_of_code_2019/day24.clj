@@ -1,5 +1,6 @@
 (ns advent-of-code-2019.day24
-  (:require [advent-of-code-2019.util :refer :all]))
+  (:require [advent-of-code-2019.util :refer :all]
+            [clojure.string :as s]))
 
 (def bug \#)
 (def space \.)
@@ -51,12 +52,13 @@
        (apply +)))
 
 (defn parse-folded-locs
-  [input]
-  (->> input
-       (parse-map)
-       (filter #(= bug (second %)))
-       (map (fn [[[x y]]] [[0 x y] bug]))
-       (into (sorted-map))))
+  ([input] (parse-folded-locs input 0))
+  ([input layer]
+   (->> input
+        (parse-map)
+        (filter #(= bug (second %)))
+        (map (fn [[[x y]]] [[layer x y] bug]))
+        (into (sorted-map)))))
 
 (def folded-dirs
   [[0 0 -1]
@@ -104,6 +106,28 @@
        (filter (fn [[pos tile]] (= tile bug)))
        (into {})))
 
+(defn draw-folded-space
+  [locs]
+  (let [layers (map first (keys locs))
+        min-layer (apply min layers)
+        max-layer (apply max layers)]
+
+    (s/join "\n\n"
+     (for [layer (range min-layer (inc max-layer))]
+       (str "Layer " layer "\n"
+            (s/join "\n"
+                    (for [y (range 0 5)]
+                      (s/join
+                        (for [x (range 0 5)]
+                          (get locs [layer x y] space))))))))))
+
+(defn folded-bugs-seq
+  [locs]
+  ;;(print (str (char 27) "[2J") ; clear screen
+  ;;       (str (char 27) "[;H") ; move cursor to the top left corner of the screen
+  ;;       )
+  ;;(draw-folded-space locs)
+  (cons locs (lazy-seq (folded-bugs-seq (next-folded-bugs locs)))))
 
 (defn solve
   [input]
