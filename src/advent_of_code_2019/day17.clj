@@ -1,21 +1,11 @@
 (ns advent-of-code-2019.day17
   (:require [clojure.string :as s]
-            [advent-of-code-2019.int-code :refer :all]))
-
-(def up [0 -1])
-(def down [0 1])
-(def left [-1 0])
-(def right [1 0])
-
-(def all-dirs [up down left right])
+            [advent-of-code-2019.int-code :refer :all]
+            [advent-of-code-2019.util :refer :all]))
 
 (def scaffold \#)
 (def open \.)
 (def bot #{\^ \v \< \>})
-
-(defn move
-  [pos dir]
-  (mapv + pos dir))
 
 (defn plot-line
   [y line]
@@ -37,8 +27,8 @@
   [plot]
   (->> plot
        (filter (fn [[pos ch]]
-                 (->> all-dirs
-                      (mapv #(move pos %))
+                 (->> dirs
+                      (mapv #(pos-move pos %))
                       (every? #(contains? plot %)))))))
 
 (defn sum-alignment-params
@@ -72,10 +62,12 @@
   (map int
        (s/join "\n"
                ;; 20 character limit per line
-               ["A,A,B,A,C" ;; 10 instructions
-                "R,12,L,6"
-                "2,L,6,L,10"
-                "0"
+               ["A,B,C" ;; 10 instructions
+                ;12345678901234567890
+                "R,12,L,6,R,12,L,8"
+                "L,6,L,10,R,12,L,6"
+                "R,12,R,12,L,10,L,6,R"
+                "10,L,8,L,6,L,10,"
                 "n"
                 ""])))
 
@@ -87,10 +79,10 @@
         working-robot (program-robot woke-robot movement-program)]
     (println (int-halted? (:brain working-robot)))
     {
-     ;; :sum-alignment-params (->> robot
-     ;;                            (:map)
-     ;;                            (find-intersections)
-     ;;                            (sum-alignment-params))
+      ;;:sum-alignment-params (->> robot
+      ;;                           (:map)
+      ;;                           (find-intersections)
+      ;;                           (sum-alignment-params))
      :final-pos (:screen working-robot)
      :total-dust (:total-dust working-robot)}))
 
