@@ -1,7 +1,8 @@
 (ns advent-of-code-2019.day15
   (:require [advent-of-code-2019.int-code :refer :all]
             [clojure.string :as s]
-            [advent-of-code-2019.util :refer :all]))
+            [advent-of-code-2019.util :refer :all]
+            [clojure.set]))
 
 (def north 1)
 (def south 2)
@@ -36,25 +37,12 @@
   [pos direction]
   (->> direction
        (delta-pos)
-       (map vector pos)
-       (map (partial apply +))))
+       (mapv vector pos)
+       (mapv (partial apply +))))
 
 (defn pick
   [s]
   (first (shuffle s)))
-
-(defn choose-direction
-  [robot]
-  ;; if pos != mapping-pos, and mapping-pos has unknown neighbors, move back
-  ;; if pos has an unknown neighbor, pick the first and move there
-  ;; if pos has no unknown neighbors, move in the direction of a pos with unknown neighbors
-  (let [neighbors (->> [north east south west]
-                       (group-by #(get-in robot [:map (move (:pos robot) %)] :unknown)))
-        {:keys [unknown blank]} neighbors]
-    (cond
-      (some? unknown) (pick unknown)
-      (= 1 (count blank)) (first blank)
-      true (pick (remove #(= % (opposite (:last-direction robot))) blank)))))
 
 (defn update-path
   [path pos]
@@ -96,7 +84,7 @@
                                             next-pos :oxygen-system})
                 :oxygen-system  next-pos}))))
 
-(defn draw-map
+(defn print-map
   [robot]
   (let [{:keys [map]} robot
         min-x (apply min (mapv first (keys map)))
@@ -119,42 +107,52 @@
 
 (defn move-robot-seq
   ([robot] (move-robot-seq {[0 0] :origin}
+                           nil
                            (apply conj empty-queue (mapv #(vector robot %) directions))))
-  ([map next]
+  ([m oxygen-system next]
    (if (empty? next)
      '()
      (do
        (let [[robot dir] (peek next)
-             robot (assoc robot :map map)
+             robot (merge robot {:map m
+                                 :oxygen-system oxygen-system})
              robot (move-robot robot dir)
              {:keys [pos]} robot
              new-dirs (->> directions
                            (filter (fn [d]
                                      (let [d-pos (move pos d)]
                                        (not (contains? (:map robot) d-pos))))))]
-         (draw-map robot)
-         (println (count next))
-         (if (or (empty? new-dirs)
-                 (not (:moved robot)))
-           (let [m (:map robot)
-                 m (assoc m (:pos robot) :blank)]
-             (cons robot (lazy-seq (move-robot-seq m (pop next)))))
-           (cons robot (lazy-seq (move-robot-seq (:map robot)
-                                                 (apply conj (pop next) (mapv #(vector robot %) new-dirs)))))))))))
+         (print-map robot)
+         (println oxygen-system)
+         (let [oxygen-system (or oxygen-system (:oxygen-system robot))]
+          (if (or (empty? new-dirs)
+                  (not (:moved robot)))
+            (let [m (:map robot)
+                  m (assoc m (:pos robot) :blank)]
+              (cons robot (lazy-seq (move-robot-seq m oxygen-system (pop next)))))
+            (cons robot (lazy-seq (move-robot-seq (:map robot)
+                                                  oxygen-system
+                                                  (apply conj (pop next) (mapv #(vector robot %) new-dirs))))))))))))
 
 (defn time-to-refill
   [robot]
-  (let [m (:map robot)
-        m (into {} (filter (fn [[_ v]] (not= v :wall)) m))
+  (let [locs (:map robot)
+        locs (into #{} (->> locs
+                             (filter (fn [[_ v]] (not= v :wall)))
+                             (map (fn [[loc]] loc))))
         start-at (:oxygen-system robot)]
-    (loop [c 0
-           m m
-           next [start-at]
-           ]
-      (if (empty? m)
-        c
-        (->> next
-             (mapcat #(pos-move next )))))))
+    (loop [ctr 0
+           remaining locs
+           next (sorted-set start-at)]
+      (clojure.pprint/pprint {:remaining (count remaining) :next (count next) :ctr ctr})
+      (if (or (empty? remaining) (empty? next))
+        ctr
+        (let [neighbors (->> next
+                             (mapcat (fn [loc] (map #(pos-move loc %) dirs)))
+                             (filter locs)
+                             (into (sorted-set)))
+              remaining (clojure.set/difference remaining neighbors)]
+          (recur (inc ctr) remaining neighbors))))))
 
 (defn solve
   [input]
@@ -205,7 +203,7 @@
 #.#.#.#.#.#.###.#####.#.#####.###.###.#.#
 #.#...#.#.#.#...#...#...#.#...#.......#.#
 #.#####.#.#.#.###.#######.#.###.#######.#
-#.#...#.#.#...#.......#.....#...#.......#
+#.#..O#.#.#...#.......#.....#...#.......#
 #.#.###.#.#########.#.#.#######.#.#####.#
 #.#.#.......#.......#.#.......#...#.....#
 #.#.#.#######.#.#############.#####.####
