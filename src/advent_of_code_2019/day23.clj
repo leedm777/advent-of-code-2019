@@ -30,7 +30,7 @@
   (->> (range 0 num-nodes)
        (mapv (partial init-node brain))
        (mapv (fn [node] {:brain node :input empty-queue}))
-       (#(hash-map :nodes % :nat nil))))
+       (#(hash-map :nodes % :nat nil :last-nat nil))))
 
 (defn deliver-packets
   [network packets]
@@ -65,17 +65,20 @@
   [network]
   (let [{:keys [nodes]} network]
     (and (some? (:nat network))
-         (every? #(empty (:input %)) nodes)
-         (every? #(empty (:output (:brain %))) nodes))))
+         (every? #(empty? (:input %)) nodes)
+         (every? #(empty? (:output (:brain %))) nodes))))
 
 (defn run-network
   [network]
   ;; read all outputs
   (if (network-settled? network)
-    (do
-      (println "SETTLED!!! " (:nat network))
+    (let [{:keys [nat last-nat]} network]
+      ;;(println "SETTLED!!! " nat)
       (-> network
-          (deliver-packets [{:addr 0 :data (:nat network)}])
+          (assoc :dupe-nat (and (some? last-nat)
+                                (= (second nat) (second last-nat))))
+          (assoc :last-nat nat)
+          (deliver-packets [{:addr 0 :data nat}])
           (recur)))
     (-> network
         (read-all-outputs)
@@ -87,19 +90,12 @@
   (cons network (lazy-seq (network-seq (run-network network)))))
 
 (defn find-dupe-nat
-  [nseq]
-  (println "ohai")
-  (reduce (fn [seen network]
-            (print-network network)
-            (let [{:keys [nat]} network
-                  [_ y] nat]
-              (if (seen y)
-                (reduced y)
-                (do
-                  (clojure.pprint/pprint seen)
-                  (conj seen y)))))
-          #{}
-          nseq))
+  [netseq]
+  (->> netseq
+       (filter :dupe-nat)
+       (first)
+       (:nat)
+       (second)))
 
 (defn solve
   [input]
