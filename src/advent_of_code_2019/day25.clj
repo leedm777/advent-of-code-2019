@@ -82,24 +82,14 @@
                    (mapv #(subs % 2)))]
     items))
 
-(defn bot-drop
-  [brain items]
-  (let [commands (mapv #(str "drop " %) items)]
-    (reduce bot-command brain commands)))
-
 (defn find-password
   ([brain]
-   (let [inventory (get-inventory brain)
-         options (vec (powerset inventory))]
-     (find-password brain inventory options)))
-  ([brain inventory [items & options]]
-   (println "Dropping " items)
-   (let [trial-brain (bot-drop brain items)
-         trial-brain (bot-command trial-brain "east")]
-     (if (int-halted? trial-brain)
-       trial-brain
-       ;; recur with the original brain, since it has full inventory
-       (recur brain inventory options)))))
+   (let [[_ brain] (int-read-all-output brain)              ;; read all old output
+         brain (bot-command brain "east")
+         [prompt brain] (int-read-all-output brain)
+         prompt (s/join (map char prompt))
+         ]
+     (s/split-lines (s/trim prompt)))))
 
 (def preload (mapv int
                    (s/join "\n"
@@ -113,14 +103,8 @@
                             "north"
                             "east"
                             "take cake"
-                            "east"
-                            "north"
-                            "take pointer"
-                            "south"
-                            "west"
                             "west"
                             "north"
-                            "take mutex"
                             "east"
                             "take antenna"
                             "west"
@@ -128,9 +112,7 @@
                             "south"
                             "east"
                             "east"
-                            "take tambourine"
                             "east"
-                            "take fuel cell"
                             "east"
                             "take boulder"
                             "north"
@@ -138,7 +120,6 @@
 
 (defn solve
   [input]
-  (println "Starting...")
   (let [program (int-parse input)
         brain (int-code program)
         ;; move where we know already
