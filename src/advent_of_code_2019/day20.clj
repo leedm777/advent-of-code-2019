@@ -57,13 +57,13 @@
        (partition-by (fn [[k v]] (= v \.)))
        (graph-portals)))
 
-(defn best-path
+(defn donut-path
   [donut]
-  (a* (:graph donut) (:entrance donut) (:exit donut)))
+  (shortest-path (:graph donut) (:entrance donut) (:exit donut)))
 
 (defn solve
   [input]
   (let [donut (parse-donut input)
-        path (best-path donut)]
-    (clojure.pprint/pprint path)
-    { :path-length (count path)}))
+        path (donut-path donut)]
+    ;;(clojure.pprint/pprint path)
+    {:path-length (dec (count path))}))

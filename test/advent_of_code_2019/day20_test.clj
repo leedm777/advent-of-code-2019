@@ -31,7 +31,8 @@
   (testing "example 1"
     (is (= [9 2] (:entrance ex1-parsed)))
     (is (= [13 16] (:exit ex1-parsed)))
-    (is (= [[9 5] [2 8]] (get-in ex1-parsed [:graph [9 6]])))))
+    (is (= [[9 5] [2 8]] (get-in ex1-parsed [:graph [9 6]])))
+    (is (= 23 (dec (count (donut-path ex1-parsed)))))))
 
 (def ex2
   (s/join "\n"
@@ -76,4 +77,6 @@
 
 (def ex2-parsed (parse-donut ex2))
 
-
+(deftest day20-part1-2
+  (testing "example 2"
+    (is (= 58 (dec (count (donut-path ex2-parsed)))))))
