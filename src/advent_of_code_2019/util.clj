@@ -112,9 +112,8 @@
    (loop [ctr 0
           visited #{ (maze-id maze start) }
           unvisited (conj empty-queue { :node start :path []})]
-     (clojure.pprint/pprint {:ctr ctr :visited (count visited), :unvisited (count unvisited)})
-     ;;(clojure.pprint/pprint visited)
-
+     (if (zero? (rem ctr 10000))
+       (clojure.pprint/pprint {:ctr ctr :visited (count visited), :unvisited (count unvisited)}))
      (let [{:keys [node path]} (peek unvisited)
            id (maze-id maze node)
            path (conj path id)
@@ -130,7 +129,7 @@
                                     (map (fn [n] {:id (maze-id maze n)
                                                   :node n
                                                   :path path}))
-                                    (remove (fn [n] (contains? visited (:id n)))))
+                                    (remove (fn [n] (visited (:id n)))))
                      visited (apply conj visited (mapv :id neighbors))
                      unvisited (apply conj unvisited neighbors)]
                  (recur (inc ctr) visited unvisited)))))))
