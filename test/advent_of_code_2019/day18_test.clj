@@ -47,15 +47,15 @@
 
 (deftest day18-part1
   (testing "ex1"
-    (is (= 8 (find-keys (plot-passages ex1)))))
+    (is (= 8 (count (solve-maze (plot-tunnels ex1))))))
   (testing "ex2"
-    (is (= 86 (find-keys (plot-passages ex2)))))
+    (is (= 86 (count (solve-maze (plot-tunnels ex2))))))
   (testing "ex3"
-    (is (= 132 (find-keys (plot-passages ex3)))))
+    (is (= 132 (count (solve-maze (plot-tunnels ex3))))))
   (testing "ex4"
-    (is (= 136 (find-keys (plot-passages ex4)))))
+    (is (= 136 (count (solve-maze (plot-tunnels ex4))))))
   (testing "ex5"
-    (is (= 81 (find-keys (plot-passages ex5)))))
+    (is (= 81 (count (solve-maze (plot-tunnels ex5))))))
   )
 
 ;; [5092 {:id [[12 5] #{\c \h \i \j \k \l \m \n \o \p}], :distance 35}]

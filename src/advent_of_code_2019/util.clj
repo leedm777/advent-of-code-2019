@@ -85,10 +85,10 @@
           path (conj path node)
           unvisited (pop unvisited)]
       (cond
-        ;; found the goal; return the path
-        (= goal node) path
         ;; goal not found
         (nil? node) nil
+        ;; found the goal; return the path
+        (= goal node) path
         ;; found shorter path; learn it and investigate the neighbors
         :else (let [neighbors (->> node
                                    (get graph)
@@ -99,13 +99,41 @@
                     unvisited (apply conj unvisited new-unvisited)]
                 (recur (inc ctr) visited unvisited))))))
 
-(defn neighbors?
-  "Returns true if two positions are neighbors"
-  [x y]
-  (->> (mapv - x y)
-       (mapv #(Math/abs %))
-       (reduce +)
-       (= 1)))
+(defprotocol Maze
+  "Protocol for a complicated maze"
+  (maze-start [maze] "Returns the starting node")
+  (maze-goal? [maze node] "Returns true if the given node is the goal")
+  (maze-neighbors [maze node] "Returns the neighbors of a given node")
+  (maze-id [maze node] "Returns id of a node"))
+
+(defn solve-maze
+  [maze]
+  (let [start (maze-start maze)]
+   (loop [ctr 0
+          visited #{ (maze-id maze start) }
+          unvisited (conj empty-queue { :node start :path []})]
+     (clojure.pprint/pprint {:ctr ctr :visited (count visited), :unvisited (count unvisited)})
+     ;;(clojure.pprint/pprint visited)
+
+     (let [{:keys [node path]} (peek unvisited)
+           id (maze-id maze node)
+           path (conj path id)
+           unvisited (pop unvisited)]
+       (cond
+         ;; goal not found
+         (nil? node) nil
+         ;; found the goal; return the path
+         (maze-goal? maze node) path
+         ;; found shorter path; learn it and investigate the neighbors
+         :else (let [neighbors (->> node
+                                    (maze-neighbors maze)
+                                    (map (fn [n] {:id (maze-id maze n)
+                                                  :node n
+                                                  :path path}))
+                                    (remove (fn [n] (contains? visited (:id n)))))
+                     visited (apply conj visited (mapv :id neighbors))
+                     unvisited (apply conj unvisited neighbors)]
+                 (recur (inc ctr) visited unvisited)))))))
 
 (defn ascii-to-str
   [chs]
