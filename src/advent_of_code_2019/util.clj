@@ -83,17 +83,14 @@
     ;;(clojure.pprint/pprint {:ctr ctr :visited (count visited), :unvisited (count unvisited)})
     (let [{:keys [node path]} (peek unvisited)
           path (conj path node)
-          unvisited (pop unvisited)
-          old-distance (if (contains? visited node)
-                         (count (get visited node))
-                         Long/MAX_VALUE)]
+          unvisited (pop unvisited)]
       (cond
         ;; found the goal; return the path
         (= goal node) path
         ;; goal not found
         (nil? node) nil
-        ;; found longer path; ignore
-        (<= old-distance (count path)) (recur (inc ctr) visited unvisited)
+        ;; found path we already had; ignore
+        (contains? visited node) (recur (inc ctr) visited unvisited)
         ;; found shorter path; learn it and investigate the neighbors
         :else (let [visited (assoc visited node path)
                     neighbors (->> node
