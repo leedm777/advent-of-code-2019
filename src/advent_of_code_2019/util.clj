@@ -77,9 +77,10 @@
 
 (defn shortest-path
   [graph start goal]
-  (loop [visited {}
+  (loop [ctr 0
+         visited {}
          unvisited (conj empty-queue { :node start :path []})]
-    ;;(clojure.pprint/pprint {:visited (count visited), :unvisited (count unvisited)})
+    ;;(clojure.pprint/pprint {:ctr ctr :visited (count visited), :unvisited (count unvisited)})
     (let [{:keys [node path]} (peek unvisited)
           path (conj path node)
           unvisited (pop unvisited)
@@ -89,15 +90,17 @@
       (cond
         ;; found the goal; return the path
         (= goal node) path
+        ;; goal not found
+        (nil? node) nil
         ;; found longer path; ignore
-        (<= old-distance (count path)) (recur visited unvisited)
+        (<= old-distance (count path)) (recur (inc ctr) visited unvisited)
         ;; found shorter path; learn it and investigate the neighbors
         :else (let [visited (assoc visited node path)
                     neighbors (->> node
                                    (get graph)
                                    (mapv (fn [n] {:node n :path path})))
                     unvisited (apply conj unvisited neighbors)]
-                (recur visited unvisited))))))
+                (recur (inc ctr) visited unvisited))))))
 
 (defn neighbors?
   "Returns true if two positions are neighbors"
