@@ -122,7 +122,7 @@
          ;; goal not found
          (nil? node) nil
          ;; found the goal; return the path
-         (maze-goal? maze node) path
+         (maze-goal? maze node) (rest path)                 ;; drop first node, because it causes off-by-one errors in the counting
          ;; found shorter path; learn it and investigate the neighbors
          :else (let [neighbors (->> node
                                     (maze-neighbors maze)

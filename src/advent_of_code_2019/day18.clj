@@ -21,7 +21,7 @@
             door-loc (doors door)]
         (-> tunnels
             (merge {:doors (dissoc doors door)
-                    :keys (dissoc keys key-loc)
+                    :keys  (dissoc keys key-loc)
                     :nodes (conj nodes door-loc)})
             (update-graph)))
       ;; no key, just return the tunnels
@@ -31,13 +31,16 @@
   ([tunnels]
    (let [{:keys [entry]} tunnels]
      (make-node tunnels entry)))
-  ([tunnels loc]
-   (let [tunnels (check-key tunnels loc)]
-     {:id      [loc (-> tunnels (:keys) (vals) (set))]
-      :loc     loc
+  ([tunnels locs]
+   (let [tunnels (reduce (fn [tunnels loc]
+                           (check-key tunnels loc))
+                         tunnels
+                         locs)]
+     {:id      [(set locs) (-> tunnels (:keys) (vals) (set))]
+      :locs    locs
       :tunnels tunnels})))
 
-(deftype GatesAndKeys [tunnels]
+(defrecord GatesAndKeys [tunnels]
   Maze
   (maze-start [maze] (make-node tunnels))
   (maze-goal? [maze node] (->> node
@@ -45,38 +48,66 @@
                                (:keys)
                                (empty?)))
   (maze-neighbors [maze node]
-    (let [{:keys [loc tunnels]} node
-          neighbor-locs (get-in tunnels [:graph loc])
+    (let [{:keys [locs tunnels]} node
+          neighbor-locs (->> locs
+                             (map-indexed (fn [idx loc]
+                                            (let [neighbors (get-in tunnels [:graph loc])]
+                                              (mapv #(assoc locs idx %) neighbors))))
+                             (apply concat))
           neighbors (mapv (partial make-node tunnels) neighbor-locs)]
       neighbors))
   (maze-id [maze node] (:id node)))
 
 (defn plot-tunnels
-  [m]
-  (->> m
-       (parse-map)
-       (reduce (fn [acc [pos ^Character ch]]
-                 (cond
-                   (= ch \#) acc                            ;; ignore walls
-                   (= ch \@) (merge acc {:entry pos
-                                         :nodes (conj (:nodes acc) pos)})
-                   (= ch \.) (merge acc {:nodes (conj (:nodes acc) pos)})
-                   ;; keys are mapped pos -> ch
-                   (Character/isLowerCase ch) (merge acc {:keys  (assoc (:keys acc) pos ch)
-                                                          :nodes (conj (:nodes acc) pos)})
-                   ;; doors are mapped ch -> pos
-                   (Character/isUpperCase ch) (merge acc {:doors (assoc (:doors acc) ch pos)})))
-               {:entry nil
-                :keys  {}
-                :doors {}
-                :nodes #{}})
-       (update-graph)
-       (GatesAndKeys.)))
+  ([m] (plot-tunnels m identity))
+  ([m tunnel-update]
+   (->> m
+        (parse-map)
+        (reduce (fn [tunnels [pos ^Character ch]]
+                  (cond
+                    (= ch \#) tunnels                       ;; ignore walls
+                    (= ch \@) (-> tunnels
+                                  (update :entry #(conj % pos))
+                                  (update :nodes #(conj % pos)))
+                    (= ch \.) (update tunnels :nodes #(conj % pos))
+                    ;; keys are mapped pos -> ch
+                    (Character/isLowerCase ch) (-> tunnels
+                                                   (update :keys #(assoc % pos ch))
+                                                   (update :nodes #(conj % pos)))
+                    ;; doors are mapped ch -> pos
+                    (Character/isUpperCase ch) (update tunnels :doors #(assoc % ch pos))))
+                {:entry []
+                 :keys  {}
+                 :doors {}
+                 :nodes #{}})
+        (tunnel-update)
+        (update-graph)
+        (GatesAndKeys.))))
+
+(defn split-vaults
+  [tunnels]
+  (let [{:keys [nodes entry]} tunnels
+        [entry] entry
+        nodes (disj nodes
+                    entry
+                    (pos-move entry [1 0])
+                    (pos-move entry [-1 0])
+                    (pos-move entry [0 1])
+                    (pos-move entry [0 -1]))
+        entry [(pos-move entry [-1 -1])
+               (pos-move entry [1 -1])
+               (pos-move entry [-1 1])
+               (pos-move entry [1 1])]]
+    (merge tunnels {:entry entry, :nodes nodes})))
 
 (defn solve
   [input]
-  {:steps-to-find-keys (->> input
-                            (plot-tunnels)
-                            (solve-maze)
-                            (count)
-                            (dec))})
+  {
+   ;;:steps-to-find-keys       (-> input
+   ;;                              (plot-tunnels)
+   ;;                              (solve-maze)
+   ;;                              (count))
+   :split-steps-to-find-keys (-> input
+                                 (plot-tunnels split-vaults)
+                                 (solve-maze)
+                                 (count))})
